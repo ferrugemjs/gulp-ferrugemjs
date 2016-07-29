@@ -1,0 +1,38 @@
+{
+  "name": "gulp-ferrugemjs",
+  "version": "0.0.1",
+  "description": "plugin GULP to convert template superview to Incremental DOM",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ferrugemjs/gulp-ferrugemjs.git"
+  },
+  "files": [
+    "index.js"
+  ],
+  "keywords": [
+    "gulp",
+    "IDOM",
+    "incremental",
+    "DOM",
+    "Template",
+    "FerrugemJS",
+    "convert",
+    "superviewsjs"
+  ],
+  "author": "alexsad",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ferrugemjs/gulp-ferrugemjs/issues"
+  },
+  "homepage": "https://github.com/ferrugemjs/gulp-ferrugemjs#readme",
+  "dependencies": {
+    "gulp": "^3.9.1",
+    "through-gulp": "^0.5.0",
+    "superviews.js": "3.0.0"
+  },
+  "devDependencies": {}
+}
