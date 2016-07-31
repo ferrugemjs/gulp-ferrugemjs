@@ -27,7 +27,7 @@ pipe(gulp_ferrugemjs())
 ```js
 var rename = require("gulp-rename");
 
-gulp.task('superviews2IDOM',function(){
+gulp.task('template2IDOM',function(){
     return gulp.src([
         "/**/template/*.html"
     ])
@@ -42,7 +42,7 @@ gulp.task('superviews2IDOM',function(){
 #### API
 mode = "es6", "cjs", "browser" or "amd"
 ```
-{mode:"es6"}
+{mode:"amd"}
 ```
 
 ## License
