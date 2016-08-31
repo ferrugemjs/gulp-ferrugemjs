@@ -15,7 +15,11 @@ module.exports = function(opt) {
 	}
 	return through(function(file, encoding, callback) {
 		if (file.isNull()) {}
-		if (file.isBuffer()) {			
+		if (file.isBuffer()) {	
+			var fileName = file.path	
+			fileName = fileName.substring(fileName.lastIndexOf('\\')+1,fileName.length-5);
+			//console.log(fileName);
+			var tmp_mod_name = "_mod_"+fileName.replace("-","_")+"_"+new Date().getTime();
 			var templateFile = new Buffer(decoder.write(file.contents));			
 			templateFile = superviews(
 										decoder.write(templateFile)
@@ -26,6 +30,8 @@ module.exports = function(opt) {
 										.replace(/ (\w*)\.((trigger)|(delegate))="([^"]+)"/g," on$1=\"{$event.preventDefault();$5}\"")
 			, null, null, opt.mode);
 			templateFile = templateFile
+							.replace(/define\(\['exports', 'incremental-dom'\], function \(exports, IncrementalDOM\) {/g,"define(['exports', 'incremental-dom', './"+fileName+"'], function (exports, IncrementalDOM, "+tmp_mod_name+") { var _"+tmp_mod_name+"_tmp = Object.keys("+tmp_mod_name+")[0];")
+							.replace(/exports\.([^ ]+) =/g,'exports.$1 = '+tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype.render =')
 							.replace(/elementOpen\(("\w+?-[^"]+")([^)]+)\)/g,'_$ferrugemLoad.load($1$2).content(function(){')
 							.replace(/elementOpen\(("\w+?-[^"]+")\)/g,'_$ferrugemLoad.load($1,"nokey",[]).content(function(){')
 							.replace(/elementClose\("\w+?-+\w.+\)+?/g,'});')
