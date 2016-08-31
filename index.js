@@ -4,6 +4,23 @@ var StringDecoder = require('string_decoder').StringDecoder;
 var decoder = new StringDecoder('utf8');
 var superviews = require("superviews.js");
 
+function getALias(p_resource_url){
+		var patt_alias = / as\W+(\w.+)/g;
+		var _tagname;
+		var _trueurl;
+		if(patt_alias.test(p_resource_url)){
+			//has a alias
+			var _urlsplit = p_resource_url.split(' as ');
+			_trueurl = _urlsplit[0];
+			_tagname = _urlsplit[1];
+		}else{
+			_trueurl = p_resource_url;
+			_tagname = p_resource_url.substring(p_resource_url.lastIndexOf("/")+1,p_resource_url.length);
+		};
+		return {tag:_tagname,url:_trueurl};
+}
+
+
 // file can be a vinyl file object or a string
 // when a string it will construct a new one
 module.exports = function(opt) {
@@ -23,6 +40,7 @@ module.exports = function(opt) {
 			var templateFile = new Buffer(decoder.write(file.contents));
 
 			var modules_to_import = [];
+			var modules_alias_to_import = [];
 
 			templateFile = superviews(
 										decoder.write(templateFile)
@@ -32,9 +50,11 @@ module.exports = function(opt) {
 											if(p1.lastIndexOf(' as ') > -1){
 												console.log(p1.substring(0,p1.lastIndexOf(' as ')));
 												modules_to_import.push(p1.substring(0,p1.lastIndexOf(' as '))+'.html');
+												modules_alias_to_import.push(p1+'.html');
 											}else{
 												console.log(p1);												
 												modules_to_import.push(p1+'.html');
+												modules_alias_to_import.push(p1);
 											}											
 											return found;
 										})	
@@ -44,17 +64,24 @@ module.exports = function(opt) {
 			, null, null, opt.mode);
 
 			var modules_string = "";
+			var modules_alias_string = "";
 
 			if(modules_to_import.length > 0){
 				modules_string = ",'"+modules_to_import.join("','")+"'";
 				console.log(modules_string);
 			}
 
+			if(modules_to_import.length > 0){
+				modules_alias_string = ","+modules_alias_to_import.join(",");
+				console.log(modules_alias_string);
+			}
+
 			
 
 			templateFile = templateFile
-							.replace(/define\(\['exports', 'incremental-dom'\], function \(exports, IncrementalDOM\) {/g,"define(['exports', 'incremental-dom', './"+fileName+"' "+modules_string+"], function (exports, IncrementalDOM, "+tmp_mod_name+") { var _"+tmp_mod_name+"_tmp = Object.keys("+tmp_mod_name+")[0];")
-							.replace(/exports\.([^ ]+) =/g,'exports.$1 = '+tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype.render =')
+							.replace(/define\(\['exports', 'incremental-dom'\], function \(exports, IncrementalDOM\) {/g,"define(['exports', 'incremental-dom', './"+fileName+"' "+modules_string+"], function (exports, IncrementalDOM, "+tmp_mod_name+modules_alias_string+") { var _"+tmp_mod_name+"_tmp = Object.keys("+tmp_mod_name+")[0];")
+							//.replace(/exports\.([^ ]+) =/g,'exports.$1 = '+tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype.render =')
+							.replace(/exports\.([^ ]+) =/g,'exports.$1 = '+tmp_mod_name+'[_'+tmp_mod_name+'_tmp];  '+tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype.render =')
 							.replace(/elementOpen\(("\w+?-[^"]+")([^)]+)\)/g,'_$ferrugemLoad.load($1$2).content(function(){')
 							.replace(/elementOpen\(("\w+?-[^"]+")\)/g,'_$ferrugemLoad.load($1,"nokey",[]).content(function(){')
 							.replace(/elementClose\("\w+?-+\w.+\)+?/g,'});')
