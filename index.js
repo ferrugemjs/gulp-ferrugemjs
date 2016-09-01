@@ -20,6 +20,10 @@ function getALias(p_resource_url){
 		return {tag:_tagname,url:_trueurl};
 }
 
+function getFunctionNameByAlias(array_modules,tag){
+	return "";
+}
+
 
 // file can be a vinyl file object or a string
 // when a string it will construct a new one
@@ -33,58 +37,76 @@ module.exports = function(opt) {
 	return through(function(file, encoding, callback) {
 		if (file.isNull()) {}
 		if (file.isBuffer()) {	
-			var fileName = file.path	
-			fileName = fileName.substring(fileName.lastIndexOf('\\')+1,fileName.length-5);
+			var fileName = file.path;
+			fileName = fileName.substring(fileName.lastIndexOf('/')+1,fileName.length-5);
+			
+			if(fileName.lastIndexOf('\\') > -1){
+				fileName = fileName.substring(fileName.lastIndexOf('\\')+1,fileName.length-5);
+			};	
 			//console.log(fileName);
 			var tmp_mod_name = "_mod_"+fileName.replace("-","_")+"_"+new Date().getTime();
 			var templateFile = new Buffer(decoder.write(file.contents));
 
 			var modules_to_import = [];
 			var modules_alias_to_import = [];
+			var modules_css_to_import = [];
 
 			templateFile = superviews(
 										decoder.write(templateFile)
-										.replace(/(<template .+args=")(.+?)"/g,'$1$2 _$ferrugemRegister _$ferrugemLoad"')
+										//.replace(/(<template .+args=")(.+?)"/g,'$1$2 _$ferrugemRegister _$ferrugemLoad"')
 										.replace('</require>', '')
 										.replace(/<require from="([^"]*)">/g,function(found,p1){
-											if(p1.lastIndexOf(' as ') > -1){
-												console.log(p1.substring(0,p1.lastIndexOf(' as ')));
-												modules_to_import.push(p1.substring(0,p1.lastIndexOf(' as '))+'.html');
-												modules_alias_to_import.push(p1+'.html');
+											if(p1.lastIndexOf('!') > -1){																								console.log(p1);												
+												modules_css_to_import.push(p1);
 											}else{
-												console.log(p1);												
-												modules_to_import.push(p1+'.html');
-												modules_alias_to_import.push(p1);
-											}											
+												var tagobject = getALias(p1);
+												console.log(tagobject);
+												modules_to_import.push(tagobject.url+'.html');
+												modules_alias_to_import.push("_"+tagobject.tag.replace(/-/g,"_")+"_");											
+											}
 											return found;
 										})	
-										.replace(/<require from="([^"]*)">/g, '<script>_$ferrugemRegister.add("$1");</script>')									
+										//.replace(/<require from="([^"]*)">/g, '<script>_$ferrugemRegister.add("$1");</script>')
+										.replace(/<require from="([^"]*)">/g, '')									
 										.replace(/[\n\t\r]/g," ")
 										.replace(/ (\w*)\.((trigger)|(delegate))="([^"]+)"/g," on$1=\"{$event.preventDefault();$5}\"")
 			, null, null, opt.mode);
 
 			var modules_string = "";
 			var modules_alias_string = "";
+			var modules_css_string = "";
 
 			if(modules_to_import.length > 0){
 				modules_string = ",'"+modules_to_import.join("','")+"'";
-				console.log(modules_string);
+				//console.log(modules_string);
 			}
 
 			if(modules_to_import.length > 0){
 				modules_alias_string = ","+modules_alias_to_import.join(",");
-				console.log(modules_alias_string);
+				//console.log(modules_alias_string);
 			}
 
+			if(modules_css_to_import.length > 0){
+				modules_css_string = ",'"+modules_css_to_import.join("','")+"'";
+				console.log(modules_css_string);
+			}
 			
 
 			templateFile = templateFile
-							.replace(/define\(\['exports', 'incremental-dom'\], function \(exports, IncrementalDOM\) {/g,"define(['exports', 'incremental-dom', './"+fileName+"' "+modules_string+"], function (exports, IncrementalDOM, "+tmp_mod_name+modules_alias_string+") { var _"+tmp_mod_name+"_tmp = Object.keys("+tmp_mod_name+")[0];")
+							.replace(/define\(\['exports', 'incremental-dom'\], function \(exports, IncrementalDOM\) {/g,"define(['exports', 'incremental-dom','ferrugemjs/generic-component', './"+fileName+"' "+modules_string+modules_css_string+"], function (exports, IncrementalDOM,_generic_component_mod, "+tmp_mod_name+modules_alias_string+") { var _"+tmp_mod_name+"_tmp = Object.keys("+tmp_mod_name+")[0];")
 							//.replace(/exports\.([^ ]+) =/g,'exports.$1 = '+tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype.render =')
-							.replace(/exports\.([^ ]+) =/g,'exports.$1 = '+tmp_mod_name+'[_'+tmp_mod_name+'_tmp];  '+tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype.render =')
-							.replace(/elementOpen\(("\w+?-[^"]+")([^)]+)\)/g,'_$ferrugemLoad.load($1$2).content(function(){')
-							.replace(/elementOpen\(("\w+?-[^"]+")\)/g,'_$ferrugemLoad.load($1,"nokey",[]).content(function(){')
-							.replace(/elementClose\("\w+?-+\w.+\)+?/g,'});')
+							.replace(/exports\.([^ ]+) =/g,tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype.refresh ='+' _generic_component_mod.GenericComponent.prototype.refresh;exports.$1 = '+tmp_mod_name+'[_'+tmp_mod_name+'_tmp];  '+tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype.render =')
+							//.replace(/elementOpen\(("\w+?-[^"]+")([^)]+)\)/g,'_$ferrugemLoad.load($1$2).content(function(){')
+							.replace(/elementOpen\(("\w+?-[^"]+")([^)]+)\)/g,function(found,$1,$2){
+								var mod_temp_name_tag = '_'+$1.replace(/"/g,"").replace(/-/g,"_")+'_';
+								return ' new '+mod_temp_name_tag+'[Object.keys('+mod_temp_name_tag+')[0]]().configComponent('+$1+''+$2+').content(function(){'
+							})
+							//.replace(/elementOpen\(("\w+?-[^"]+")\)/g,'_$ferrugemLoad.load($1,"nokey",[]).content(function(){')
+							.replace(/elementOpen\(("\w+?-[^"]+")\)/g,function(found,$1){
+								var mod_temp_name_tag = '_'+$1.replace(/"/g,"").replace(/-/g,"_")+'_';
+								return ' new '+mod_temp_name_tag+'[Object.keys('+mod_temp_name_tag+')[0]]().configComponent('+$1+',"nokey",[]).content(function(){'
+							})
+							.replace(/elementClose\("\w+?-+\w.+\)+?/g,'}).refresh();')
 							.replace('elementClose("content")','')
 							.replace('elementOpen("content")','this.content();')		
 			file.contents = new Buffer(templateFile);
