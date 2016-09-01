@@ -77,15 +77,15 @@ module.exports = function(opt) {
 				modules_css_string = ",'"+modules_css_to_import.join("','")+"'";
 			}
 			templateFile = templateFile
-							.replace(/define\(\['exports', 'incremental-dom'\], function \(exports, IncrementalDOM\) {/g,"define(['exports', 'incremental-dom','ferrugemjs', './"+fileName+"' "+modules_string+modules_css_string+"], function (exports, IncrementalDOM,_generic_component_mod, "+tmp_mod_name+modules_alias_string+") { var _"+tmp_mod_name+"_tmp = Object.keys("+tmp_mod_name+")[0];")
-							.replace(/exports\.([^ ]+) =/g,tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype.content ='+' _generic_component_mod.GenericComponent.prototype.content;'+tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype.configComponent ='+' _generic_component_mod.GenericComponent.prototype.configComponent;'+tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype.refresh ='+' _generic_component_mod.GenericComponent.prototype.refresh;exports.$1 = '+tmp_mod_name+'[_'+tmp_mod_name+'_tmp];  '+tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype.render =')
+							.replace(/define\(\['exports', 'incremental-dom'\], function \(exports, IncrementalDOM\) {/g,"define(['exports', 'incremental-dom','ferrugemjs', './"+fileName+"' "+modules_string+modules_css_string+"], function (exports, IncrementalDOM,_ferrugemjs_mod_, "+tmp_mod_name+modules_alias_string+") { var _"+tmp_mod_name+"_tmp = Object.keys("+tmp_mod_name+")[0];")
+							.replace(/exports\.([^ ]+) =/g,tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype.content = _ferrugemjs_mod_.GenericComponent.prototype.content;'+tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype.refresh = _ferrugemjs_mod_.GenericComponent.prototype.refresh;exports.$1 = '+tmp_mod_name+'[_'+tmp_mod_name+'_tmp];  '+tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype.render =')
 							.replace(/elementOpen\(("\w+?-[^"]+")([^)]+)\)/g,function(found,$1,$2){
-								var mod_temp_name_tag = '_'+$1.replace(/"/g,"").replace(/-/g,"_")+'_';
-								return ' new '+mod_temp_name_tag+'[Object.keys('+mod_temp_name_tag+')[0]]().configComponent('+$1+''+$2+').content(function(){'
+								var mod_temp_name_tag = '_'+$1.replace(/"/g,"").replace(/-/g,"_")+'_'+new Date().getTime();
+								return ' var tmp_'+mod_temp_name_tag+'_inst = new '+mod_temp_name_tag+'[Object.keys('+mod_temp_name_tag+')[0]](); _ferrugemjs_mod_.AuxClass.prototype.configComponent.call(tmp_'+mod_temp_name_tag+'_inst,'+$1+''+$2+');tmp_'+mod_temp_name_tag+'_inst.content(function(){'
 							})
 							.replace(/elementOpen\(("\w+?-[^"]+")\)/g,function(found,$1){
-								var mod_temp_name_tag = '_'+$1.replace(/"/g,"").replace(/-/g,"_")+'_';
-								return ' new '+mod_temp_name_tag+'[Object.keys('+mod_temp_name_tag+')[0]]().configComponent('+$1+',"nokey",[]).content(function(){'
+								var mod_temp_name_tag = '_'+$1.replace(/"/g,"").replace(/-/g,"_")+'_'+new Date().getTime();
+								return ' var tmp_'+mod_temp_name_tag+'_inst = new '+mod_temp_name_tag+'[Object.keys('+mod_temp_name_tag+')[0]](); _ferrugemjs_mod_.AuxClass.prototype.configComponent.call(tmp_'+mod_temp_name_tag+'_inst,'+$1+',"nokey",[]);tmp_'+mod_temp_name_tag+'_inst.content(function(){'
 							})
 							.replace(/elementClose\("\w+?-+\w.+\)+?/g,'}).refresh();')
 							.replace('elementClose("content")','')
