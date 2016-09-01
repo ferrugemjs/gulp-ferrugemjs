@@ -38,7 +38,7 @@ module.exports = function(opt) {
 			if(fileName.lastIndexOf('\\') > -1){
 				fileName = fileName.substring(fileName.lastIndexOf('\\')+1,fileName.length-5);
 			};	
-			var tmp_mod_name = "_mod_"+fileName.replace("-","_")+"_"+new Date().getTime();
+			var tmp_mod_name = "_mod_"+fileName.replace(/-/g,"_")+"_"+new Date().getTime();
 			var templateFile = new Buffer(decoder.write(file.contents));
 
 			var modules_to_import = [];
