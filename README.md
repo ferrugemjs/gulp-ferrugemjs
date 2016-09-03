@@ -18,31 +18,8 @@ gulp-ferrugemjs is a simple [gulp](https://github.com/wearefractal/gulp) plugin 
 ```js
 var gulp_ferrugemjs = require('gulp-ferrugemjs');//import the plugin
 // your code here!!
-pipe(gulp_ferrugemjs())
+pipe(gulp_ferrugemjs({mode:"amd"}))
 //..pass to next pipe ;)
-```
-
-####A more "complex" example (with "<a href="https://www.npmjs.com/package/gulp-rename">gulp-rename</a>" gulp plugin):
-
-```js
-var rename = require("gulp-rename");
-
-gulp.task('template2IDOM',function(){
-    return gulp.src([
-        "/**/template/*.html"
-    ])
-    .pipe(gulp_ferrugemjs({mode:"es6"}))
-    .pipe(rename({
-        extname: ".js"
-    }))
-    .pipe(gulp.dest(distPackage));
-});
-```
-
-#### API
-mode = "es6", "cjs", "browser" or "amd"
-```
-{mode:"amd"}
 ```
 
 ## License
