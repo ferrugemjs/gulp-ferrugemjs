@@ -33,11 +33,9 @@ module.exports = function(opt) {
 		if (file.isNull()) {}
 		if (file.isBuffer()) {	
 			var fileName = file.path;
-			fileName = fileName.substring(fileName.lastIndexOf('/')+1,fileName.length-5);
+			fileName = fileName.match(/(\w|[-.])+$/g)[0];
+			fileName = fileName.substring(0,fileName.length-5);
 			
-			if(fileName.lastIndexOf('\\') > -1){
-				fileName = fileName.substring(fileName.lastIndexOf('\\')+1,fileName.length-5);
-			};	
 			var tmp_mod_name = "_mod_"+fileName.replace(/-/g,"_")+"_"+new Date().getTime();
 			var templateFile = new Buffer(decoder.write(file.contents));
 
