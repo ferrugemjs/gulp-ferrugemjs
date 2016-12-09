@@ -46,6 +46,12 @@ module.exports = function(opt) {
 			templateFile = superviews(
 										decoder.write(templateFile)
 										.replace('</require>', '')
+										.replace(/(<style>)+([^<]*)+(<\/style>)/gm,"<script>"
+											+"var tmp_style = document.createElement('style');"
+											+"tmp_style.type = 'text/css';"
+											+"tmp_style.innerHTML = '$2';"
+											+"document.getElementsByTagName('head')[0].appendChild(tmp_style);"
+										+"</script>")
 										.replace(/<require from="([^"]*)">/g,function(found,p1){
 											if(p1.lastIndexOf('!') > -1){												
 												modules_css_to_import.push(p1);
