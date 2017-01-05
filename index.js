@@ -144,7 +144,12 @@ module.exports = function(opt) {
 				    }else if(name==="template"){				    	
 				    	renderIDOMHTML += 'function('+attribs.args+'){\n';	
 				    }else if(["if","each"].indexOf(name) < 0){
-				    	renderIDOMHTML += '_idom.elementOpen("'+name+'");\n';
+						var obj_array = [];
+						for(var key in attribs){
+							obj_array.push(''+key+'');
+							obj_array.push(attribs[key]);
+						}
+				    	renderIDOMHTML += '_idom.elementOpen("'+name+'",null,["'+obj_array.join('","')+'"]);\n';
 				    }
 				},
 				ontext: function(text){
