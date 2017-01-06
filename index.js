@@ -22,13 +22,13 @@ function strify (str) {
 }
 
 function interpolate (text) {
-  /*
-	  text = text.replace(/\{/g, '" + (');
-	  text = text.replace(/\}/g, ') + "');
-	  text = text.replace(/\n/g, ' \\\n');
-	  return strify(text);
-	  //return text;
-*/
+	/*
+		  text = text.replace(/\{/g, '" + (');
+		  text = text.replace(/\}/g, ') + "');
+		  text = text.replace(/\n/g, ' \\\n');
+		  return strify(text);
+		  //return text;
+	*/
   console.log(text);
   text = text.replace(/"\{/g, ' (');
   text = text.replace(/\}"/g, ') ');
@@ -123,7 +123,7 @@ module.exports = function(opt) {
 				    									.replace(/"\{/g,'(')
 				    									.replace(/\}"/g,')');
 				    	
-
+				    	//console.log(mod_tmp_attr_str);
 
 				    	//renderIDOMHTML += '_idom.elementOpen("div","'+mod_temp_inst+'",["id","'+mod_temp_inst+'","class","'+name+'"]);\n';
 				    	//renderIDOMHTML += '_idom.elementClose("div");\n';
@@ -149,7 +149,22 @@ module.exports = function(opt) {
 							obj_array.push(''+key+'');
 							obj_array.push(attribs[key]);
 						}
-				    	renderIDOMHTML += '_idom.elementOpen("'+name+'",null,["'+obj_array.join('","')+'"]);\n';
+						/*
+						var mod_tmp_attr_str = '["'+obj_array.join('","')
+				    									.replace(/\{/g,'(')
+				    									.replace(/\}/g,')')+'"]';
+						*/
+						var mod_tmp_attr_str = '["'+obj_array.join('","')+'"]'.replace(/"\{([^}]+)\}"/g,function($1,$2){
+  							return "("+$2+")";
+						});
+				    	var mod_tmp_attr_str2 = '["'+obj_array.join('","')+'"]';								
+
+
+				    	//.replace(/"\{/g,'(')
+				    	//								.replace(/\}"/g,')');
+						console.log('t2',mod_tmp_attr_str2,mod_tmp_attr_str);
+				    	
+				    	renderIDOMHTML += '_idom.elementOpen("'+name+'",null,'+mod_tmp_attr_str+');\n';
 				    }
 				},
 				ontext: function(text){
