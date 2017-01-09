@@ -80,16 +80,14 @@ module.exports = function(opt) {
 			var lastTag = "";
 			var renderIDOMHTML = "";
 			var mod_temp_inst = '';
+			var render_args = '';
 			var parser = new htmlparser.Parser({
 				onopentag: function(name, attribs){
 					lastTag = name;
 				    if(name === "script" && attribs.type === "text/javascript"){
 				        //appendBuffer("JS! Hooray!");
-				    }else if(name==="content"){
-				    	console.log('cheguei no content!!!');
-
+				    }else if(name==="content"){				    	
 				    	renderIDOMHTML += 'this.content();';
-
 				    }else if(name === "style"){
 				    	//appendBuffer('style here!!!');
 				    }else if(name === "require" && attribs["from"]){
@@ -107,19 +105,21 @@ module.exports = function(opt) {
 						mod_temp_inst = 'tmp_inst_'+mod_temp_name_tag+new Date().getTime();
 				    	renderIDOMHTML += ' var '+mod_temp_inst+' = new '+mod_temp_name_tag+'.default();\n';
 				    	
-				    	/*
+				    	
 				    	var mod_tmp_attr = {};
 
 				    	for (var key in attribs) {
-				    		if(attribs[key].indexOf("{") >- 1){
-				    			mod_tmp_attr[key] = eval(interpolate(attribs[key]));
+				    		if(key.indexOf(".") > 0){
+				    			console.log(key,attribs[key]);
+				    			mod_tmp_attr[key] = "{"+attribs[key]+"}";
 				    		}else{
 				    			mod_tmp_attr[key] = attribs[key];
 				    		}
 				    		//mod_tmp_attr[key] = interpolate(attribs[key]);
 				    	}
-				    	*/
-				    	var mod_tmp_attr_str = JSON.stringify(attribs)
+				    	
+
+				    	var mod_tmp_attr_str = JSON.stringify(mod_tmp_attr)
 				    									.replace(/"\{/g,'(')
 				    									.replace(/\}"/g,')');
 				    	
@@ -138,32 +138,71 @@ module.exports = function(opt) {
 
 				    	//renderIDOMHTML += ' '+mod_temp_inst+'.refresh();\n';
 
-						
-
-				    
-				    }else if(name==="template"){				    	
+				    }else if(name==="template"){	
+				        render_args	= attribs.args;	    	
 				    	renderIDOMHTML += 'function('+attribs.args+'){\n';	
+				    }else if(name==="for"){
+				    	var array_each = attribs.each.split(" in ");
+				    	var sub_array_each = array_each[0].split(",");
+				    	var index_array = "";
+				    	if(sub_array_each.length > 1){
+				    		index_array = ","+sub_array_each[1];
+				    	}
+				    	console.log(array_each);
+				    	renderIDOMHTML += '\t'+array_each[1]+'.forEach(function('+sub_array_each[0]+index_array+'){\n';
+				    	//renderIDOMHTML += '\tfor('+attribs.condition+'){\n';
+				    }else if(name==="if"){
+				    	renderIDOMHTML += '\tif('+attribs.condition+'){\n';
+				    }else if(name==="elseif"){
+				    	renderIDOMHTML += '\t}else if('+attribs.condition+'){\n';
 				    }else if(["if","each"].indexOf(name) < 0){
 						var obj_array = [];
+						
+						
 						for(var key in attribs){
-							obj_array.push(''+key+'');
-							obj_array.push(attribs[key]);
+							
+							if(key.indexOf(".") > 0){
+								obj_array.push('on'+key.substring(0,key.indexOf("."))+'');
+								obj_array.push('{'+attribs[key]+'.bind('+render_args+')}');								
+							}else{
+								obj_array.push(''+key+'');
+								obj_array.push(attribs[key]);
+							}							
 						}
 						/*
 						var mod_tmp_attr_str = '["'+obj_array.join('","')
 				    									.replace(/\{/g,'(')
 				    									.replace(/\}/g,')')+'"]';
 						*/
-						var mod_tmp_attr_str = '["'+obj_array.join('","')+'"]'.replace(/"\{([^}]+)\}"/g,function($1,$2){
+
+						/*
+						var str_test = '["kara","{oxe-bicho}","si-nao-miguel","{cara-vai}"]';
+
+						var result = str_test.replace(/"\{([^}]+)\}"/g,function($1,$2){
+  							//console.log($2);
+  							return "("+$2+")";
+						}); 
+
+						console.log(result);
+						*/
+						var mod_tmp_attr_str_ = '["'+obj_array.join('","')+'"]';
+
+						var mod_tmp_attr_str = mod_tmp_attr_str_.replace(/\"\{([^}]*)\}\"/g,function($1,$2){
+  							//console.log($2);
   							return "("+$2+")";
 						});
-				    	var mod_tmp_attr_str2 = '["'+obj_array.join('","')+'"]';								
+
+
+						//mod_tmp_attr_str = mod_tmp_attr_str.
+				    	//var mod_tmp_attr_str2 = '["'+obj_array.join('","')+'"]';								
 
 
 				    	//.replace(/"\{/g,'(')
 				    	//								.replace(/\}"/g,')');
-						console.log('t2',mod_tmp_attr_str2,mod_tmp_attr_str);
-				    	
+				    	if(obj_array.length){
+				    		//console.log('t2',mod_tmp_attr_str_,mod_tmp_attr_str);
+				    	}
+						
 				    	renderIDOMHTML += '_idom.elementOpen("'+name+'",null,'+mod_tmp_attr_str+');\n';
 				    }
 				},
@@ -177,7 +216,10 @@ module.exports = function(opt) {
 						}else if(lastTag.indexOf("-") > -1){
 							console.log(text);
 						}else if(["template","if","each","require","style"].indexOf(lastTag) < 0){
-							renderIDOMHTML += '_idom.text("'+text.trim()+'");\n';
+							renderIDOMHTML += '_idom.text("'+text.trim().replace(/\{([^}]*)\}/g,function($1,$2){
+  							//console.log($2);
+  							return '"+('+$2+')+"';
+						})+'");\n';
 						}
 					}				  
 				    lastTag = "";
@@ -195,6 +237,12 @@ module.exports = function(opt) {
 
 				    	mod_temp_inst = '';
 
+				    }else if(["else"].indexOf(tagname) > -1){
+				    	renderIDOMHTML += '\n\t}else{\n';
+				    }else if(["if"].indexOf(tagname) > -1){
+				    	renderIDOMHTML += '\n\t};\n';
+				    }else if(["for"].indexOf(tagname) > -1){
+				    	renderIDOMHTML += '\n\t});\n';
 				    }else if(["template","if","each","require","style"].indexOf(tagname) < 0){
 				    	renderIDOMHTML += '_idom.elementClose("'+tagname+'");\n';
 				    }
