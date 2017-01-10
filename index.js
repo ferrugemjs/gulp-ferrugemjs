@@ -28,10 +28,8 @@ function flush () {
 
 function appendContext(str){
 	if(typeof str === "string"){
-		var nstr = str.replace(/([.]?[_$a-zA-Z]+[a-zA-Z0-9_$]*)/g,function($0,$1){
-			if($1.indexOf(".")===0){
-				return $1;
-			}else if(lasts_index_alias.indexOf($1) > -1 || lasts_item_alias.indexOf($1) > -1){
+		var nstr = str.replace(/this\.([_$a-zA-Z]+[a-zA-Z0-9_$]*)/g,function($0,$1){
+			if(lasts_index_alias.indexOf($1) > -1 || lasts_item_alias.indexOf($1) > -1){
 				return $1;
 			}
 			return render_controller_alias+"."+$1;
@@ -39,7 +37,6 @@ function appendContext(str){
 		return nstr;
 	}
 	return str;
-
 }
 
 function getALias(p_resource_url){
@@ -79,14 +76,23 @@ module.exports = function(opt) {
 			var modules_css_to_import = [];
 			var lastTag = "";
 			var renderIDOMHTML = "";
-			var mod_temp_inst = '';
+			var mod_temp_inst = "";
+			var className = "";
 
 			var parser = new htmlparser.Parser({
 				onopentag: function(name, attribs){
 					lastTag = name;
 					if(name==="template"){  	
 				    	renderIDOMHTML += 'function('+render_controller_alias+'){\n';				    	
-				    	//renderIDOMHTML += '_idom.elementOpen("div",'+render_controller_alias+'._$el$domref.target,["id",'+render_controller_alias+'._$el$domref.target,"class","'+fileName+'"]);\n';
+				    	className = fileName;
+				    	if(attribs.class){
+				    		className=attribs.class;
+				    	};
+				    	renderIDOMHTML += render_controller_alias+'._$el$domref.static_vars.className="'+className+'";\n';
+				    	//var uid = "uid_"+nextUID();
+				    	//renderIDOMHTML += '_idom.elementOpen("div","'+uid+'",["id","'+uid+'","class","'+className+'"]);\n';
+				    	//renderIDOMHTML += '_idom.elementOpen("div","'+uid+'",["id","'+uid+'","class","'+className+'"]);\n';
+				    	//renderIDOMHTML += '_idom.elementOpen("div",'+render_controller_alias+'._$el$domref.static_vars.id,["data-target",'+render_controller_alias+'._$el$domref.target,"id",'+render_controller_alias+'._$el$domref.static_vars.id,"class","'+className+'"]);\n';	
 				    }else if(name === "script" && attribs.type === "text/javascript"){
 
 				    }else if(name==="content"){				    	
@@ -107,9 +113,9 @@ module.exports = function(opt) {
 				    	var mod_tmp_attr = {};
 				    	for (var key in attribs) {
 				    		if(key.indexOf(".") > 0){				    			
-				    			mod_tmp_attr[key] = "{"+appendContext(attribs[key])+"}";				    			
+				    			mod_tmp_attr[key] = "${"+appendContext(attribs[key])+"}";				    			
 				    		}else{				    			
-				    			if(attribs[key].indexOf("{") > -1){
+				    			if(attribs[key].indexOf("${") === 0){
 				    				mod_tmp_attr[key] = appendContext(attribs[key]);
 				    			}else{
 				    				mod_tmp_attr[key] = attribs[key];
@@ -117,7 +123,7 @@ module.exports = function(opt) {
 				    		}				    		
 				    	}
 				    	var mod_tmp_attr_str = JSON.stringify(mod_tmp_attr)
-				    									.replace(/"\{/g,'(')
+				    									.replace(/"\$\{/g,'(')
 				    									.replace(/\}"/g,')');
 
 				    	renderIDOMHTML += ' _libfjs_mod_.AuxClass.prototype.configComponent.call('+mod_temp_inst+',"'+name+'","'+mod_temp_inst+'",'+mod_tmp_attr_str+');\n';
@@ -138,16 +144,25 @@ module.exports = function(opt) {
 				    }else if(name==="elseif"){
 				    	renderIDOMHTML += '\t}else if('+appendContext(attribs.condition)+'){\n';
 				    }else{
-						var obj_array = [];						
-						for(var key in attribs){							
-							if(key.indexOf(".") > 0){
+						var obj_array = [];		
+						var bindField = "";				
+						for(var key in attribs){	
+							if(key.indexOf("value.bind") > -1 && (name==="input" || name==="textarea" || name==="select")){
+								if(name==="select"){
+									obj_array.push('onchange');
+									obj_array.push('#{#function($evt){var tmp_$target$_evt=$evt.target;'+appendContext(attribs[key])+'=tmp_$target$_evt.options[tmp_$target$_evt.selectedIndex].value;'+render_controller_alias+'.refresh()}#}#');
+								}else{
+									obj_array.push('onkeyup');
+									obj_array.push('#{#function($evt){'+appendContext(attribs[key])+'=$evt.target.value;'+render_controller_alias+'.refresh()}#}#');
+								}								
+							}else if(key.indexOf(".") > 0){
 								obj_array.push('on'+key.substring(0,key.indexOf("."))+'');
-								obj_array.push('{'+appendContext(attribs[key])+'.bind('+render_controller_alias+')}');								
+								obj_array.push('${'+appendContext(attribs[key])+'.bind('+render_controller_alias+')}');								
 							}else{
 								obj_array.push(''+key+'');
 								//console.log(attribs[key]);
 								
-								if(typeof attribs[key] === "string" && attribs[key].indexOf("{") === 0){
+								if(typeof attribs[key] === "string" && attribs[key].indexOf("${") === 0){
 									obj_array.push(appendContext(attribs[key]));
 								}else{
 									obj_array.push(attribs[key]);
@@ -156,9 +171,11 @@ module.exports = function(opt) {
 						}
 						var mod_tmp_attr_str_ = '["'+obj_array.join('","')+'"]';
 						
-						var mod_tmp_attr_str = mod_tmp_attr_str_.replace(/\"\{([^}]*)\}\"/g,function($1,$2){
+						var mod_tmp_attr_str = mod_tmp_attr_str_.replace(/\"\$\{([^}]*)\}\"/g,function($1,$2){
   							return "("+$2+")";
-						});						
+						});	
+						mod_tmp_attr_str = mod_tmp_attr_str.replace(/\"#{#/g,"(");
+						mod_tmp_attr_str = mod_tmp_attr_str.replace(/#}#\"/g,")");
 						
 				    	renderIDOMHTML += '_idom.elementOpen("'+name+'",null,'+mod_tmp_attr_str+');\n';
 				    }
@@ -173,7 +190,7 @@ module.exports = function(opt) {
 						}else if(lastTag.indexOf("-") > -1){
 							console.log(text);
 						}else if(["template","if","each","require","style"].indexOf(lastTag) < 0){
-							renderIDOMHTML += '_idom.text("'+text.trim().replace(/\{([^}]*)\}/g,function($1,$2){
+							renderIDOMHTML += '_idom.text("'+text.trim().replace(/\$\{([^}]*)\}/g,function($1,$2){
   							//console.log($2);
   							return '"+('+appendContext($2)+')+"';
 						})+'");\n';
