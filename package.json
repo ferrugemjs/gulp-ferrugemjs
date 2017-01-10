@@ -30,6 +30,7 @@
   "homepage": "https://github.com/ferrugemjs/gulp-ferrugemjs#readme",
   "dependencies": {
     "gulp": "^3.9.1",
+    "htmlparser2": "^3.9.2",
     "through-gulp": "^0.5.0"
   },
   "devDependencies": {}
