@@ -1,7 +1,7 @@
 {
   "name": "gulp-ferrugemjs",
   "version": "0.0.12",
-  "description": "plugin GULP to convert template superview to Incremental DOM",
+  "description": "plugin GULP to convert html template to Incremental DOM",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

@@ -240,6 +240,7 @@ module.exports = function(opt) {
 			
 			buffer.push('\n var _'+tmp_mod_name+'_tmp = Object.keys('+tmp_mod_name+')[0];');
 
+			buffer.push('\n'+tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype.$className$ref_style_name$ = "'+className+'";');
 			buffer.push('\n'+tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype.content = _libfjs_mod_.GenericComponent.prototype.content;');
 			buffer.push('\n'+tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype.refresh = _libfjs_mod_.GenericComponent.prototype.refresh;');
 			buffer.push('\n'+tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype.render = '+renderIDOMHTML+'}');
