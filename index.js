@@ -93,8 +93,8 @@ module.exports = function(opt) {
 				    	//renderIDOMHTML += '_idom.elementOpen("div","'+uid+'",["id","'+uid+'","class","'+className+'"]);\n';
 				    	//renderIDOMHTML += '_idom.elementOpen("div","'+uid+'",["id","'+uid+'","class","'+className+'"]);\n';
 				    	//renderIDOMHTML += '_idom.elementOpen("div",'+render_controller_alias+'._$el$domref.static_vars.id,["data-target",'+render_controller_alias+'._$el$domref.target,"id",'+render_controller_alias+'._$el$domref.static_vars.id,"class","'+className+'"]);\n';	
-				    }else if(name === "script" && attribs.type === "text/javascript"){
-
+				    }else if(name === "script"){
+				    	//avoid script support
 				    }else if(name==="content"){				    	
 				    	renderIDOMHTML += 'this.content();\n';
 				    }else if(name === "style"){
@@ -144,6 +144,7 @@ module.exports = function(opt) {
 				    }else if(name==="elseif"){
 				    	renderIDOMHTML += '\t}else if('+appendContext(attribs.condition)+'){\n';
 				    }else{
+				    	//is a normal tag
 						var obj_array = [];		
 						var bindField = "";				
 						for(var key in attribs){	
@@ -157,7 +158,15 @@ module.exports = function(opt) {
 								}								
 							}else if(key.indexOf(".") > 0){
 								obj_array.push('on'+key.substring(0,key.indexOf("."))+'');
-								obj_array.push('${'+appendContext(attribs[key])+'.bind('+render_controller_alias+')}');								
+								var argslist = '('+render_controller_alias+')';
+								var fnkey = appendContext(attribs[key]);								
+								var argsInitIndex = fnkey.indexOf("(");
+								if(argsInitIndex > 0){								
+									argslist = fnkey.substring(argsInitIndex+1,fnkey.length);
+									argslist = '('+render_controller_alias+','+argslist;									
+									fnkey = fnkey.substring(0,argsInitIndex);
+								}								
+								obj_array.push('${'+fnkey+'.bind'+argslist+'}');								
 							}else{
 								obj_array.push(''+key+'');
 								//console.log(attribs[key]);
