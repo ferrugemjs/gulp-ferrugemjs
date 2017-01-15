@@ -53,19 +53,42 @@ function getALias(p_resource_url){
 		};
 		return {tag:_tagname,url:_trueurl};
 }
+function formatContext(value){
+	return value
+		.replace(/"\$\{/g,'(')
+		.replace(/\}"/g,')');
+}
 function attrToContext(attribs){
-	var mod_tmp_attr_str = JSON.stringify(attribs)
-									.replace(/"\$\{/g,'(')
-									.replace(/\}"/g,')');
+	var mod_tmp_attr_str = formatContext(JSON.stringify(attribs));									
 	return mod_tmp_attr_str;
+}
+
+function adjustEvents(key,value){
+	var argslist = '('+render_controller_alias+')';
+	value = appendContext(value);								
+	var argsInitIndex = value.indexOf("(");
+	if(argsInitIndex > 0){								
+		argslist = value.substring(argsInitIndex+1,value.length);
+		argslist = '('+render_controller_alias+','+argslist;									
+		value = value.substring(0,argsInitIndex);
+	}								
+	value = '${'+value+'.bind'+argslist+'}';
+	return {
+		key:key
+		,value:value
+	}
 }
 
 function separateAttribs(attribs){
 	var static_attr = {};
 	var dinamic_attr = {};
 	for (var key in attribs) {
-		if(key.indexOf(".") > 0){				    			
-			dinamic_attr[key] = "${"+appendContext(attribs[key])+"}";				    			
+		if(key.indexOf(".") > 0){	
+			//is a custom event			    			
+			//dinamic_attr[key] = "${"+appendContext(attribs[key])+"}";
+			var eventStripped =	adjustEvents(key,attribs[key]);
+			dinamic_attr[key] = eventStripped.value;
+												    			
 		}else{				    			
 			if(attribs[key].indexOf("${") === 0){
 				dinamic_attr[key] = appendContext(attribs[key]);
@@ -138,7 +161,8 @@ module.exports = function(opt) {
 				    	var separate_attrs = separateAttribs(attribs);
 				    	var mod_tmp_attr_str = attrToContext(separate_attrs.dinamic);
 				    	var mod_tmp_static_attr_str = JSON.stringify(separate_attrs.static);
-				    	renderIDOMHTML += ' _libfjs_mod_.AuxClass.prototype.compose.call(null,"'+attribs["view"]+'",'+mod_tmp_attr_str+','+mod_tmp_static_attr_str+',function(){ \n';
+				    	//console.log(attribs["view"],formatContext('"'+attribs["view"]+'"'),formatContext('"'+'chora-nao bebe'+'"'))
+				    	renderIDOMHTML += ' _libfjs_mod_.AuxClass.prototype.compose.call(null,'+formatContext('"'+attribs["view"]+'"')+','+mod_tmp_attr_str+','+mod_tmp_static_attr_str+',function(){ \n';
 				    }else if(name.indexOf("-") > -1){
 				    	var mod_temp_name_tag = '_'+name.replace(/-/g,"_")+'_';
 						mod_temp_inst = 'tmp_inst_'+mod_temp_name_tag+nextUID();
@@ -147,6 +171,7 @@ module.exports = function(opt) {
 				    	var separate_attrs = separateAttribs(attribs);
 				    	var mod_tmp_attr_str = attrToContext(separate_attrs.dinamic);
 				    	var mod_tmp_static_attr_str = JSON.stringify(separate_attrs.static);
+				    	//console.log(mod_tmp_attr_str);
 
 				    	renderIDOMHTML += ' _libfjs_mod_.AuxClass.prototype.configComponent.call('+mod_temp_inst+',"'+name+'","'+mod_temp_inst+'",'+mod_tmp_attr_str+','+mod_tmp_static_attr_str+');\n';
 				    	renderIDOMHTML += ' '+mod_temp_inst+'.content(function(){ \n';
@@ -180,16 +205,9 @@ module.exports = function(opt) {
 									obj_array.push('#{#function($evt){\n'+appendContext(attribs[key])+'=$evt.target.value;\n'+render_controller_alias+'.refresh()\n}\n#}#');
 								}								
 							}else if(key.indexOf(".") > 0){
-								obj_array.push('on'+key.substring(0,key.indexOf("."))+'');
-								var argslist = '('+render_controller_alias+')';
-								var fnkey = appendContext(attribs[key]);								
-								var argsInitIndex = fnkey.indexOf("(");
-								if(argsInitIndex > 0){								
-									argslist = fnkey.substring(argsInitIndex+1,fnkey.length);
-									argslist = '('+render_controller_alias+','+argslist;									
-									fnkey = fnkey.substring(0,argsInitIndex);
-								}								
-								obj_array.push('${'+fnkey+'.bind'+argslist+'}');								
+								var eventStripped =	adjustEvents('on'+key.substring(0,key.indexOf("."))+'',attribs[key]);
+								obj_array.push(eventStripped.key);
+								obj_array.push(eventStripped.value);								
 							}else{								
 								if(typeof attribs[key] === "string" && attribs[key].indexOf("${") === 0){
 									obj_array.push(''+key+'');
