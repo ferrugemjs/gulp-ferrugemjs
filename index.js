@@ -53,6 +53,32 @@ function getALias(p_resource_url){
 		};
 		return {tag:_tagname,url:_trueurl};
 }
+function attrToContext(attribs){
+	var mod_tmp_attr_str = JSON.stringify(attribs)
+									.replace(/"\$\{/g,'(')
+									.replace(/\}"/g,')');
+	return mod_tmp_attr_str;
+}
+
+function separateAttribs(attribs){
+	var static_attr = {};
+	var dinamic_attr = {};
+	for (var key in attribs) {
+		if(key.indexOf(".") > 0){				    			
+			dinamic_attr[key] = "${"+appendContext(attribs[key])+"}";				    			
+		}else{				    			
+			if(attribs[key].indexOf("${") === 0){
+				dinamic_attr[key] = appendContext(attribs[key]);
+			}else{
+				static_attr[key] = attribs[key];
+			}				    			
+		}				    		
+	}
+	return {
+		static:static_attr
+		,dinamic:dinamic_attr
+	}
+}
 
 module.exports = function(opt) {
 	opt = opt || {};
@@ -78,7 +104,7 @@ module.exports = function(opt) {
 			var renderIDOMHTML = "";
 			var mod_temp_inst = "";
 			var className = "";
-
+			var index_array = "";
 			var parser = new htmlparser.Parser({
 				onopentag: function(name, attribs){
 					lastTag = name;
@@ -96,8 +122,9 @@ module.exports = function(opt) {
 				    }else if(name === "script"){
 				    	//avoid script support
 				    }else if(name==="content"){				    	
-				    	renderIDOMHTML += 'this.content();\n';
+				    	renderIDOMHTML += render_controller_alias+'.content();\n';
 				    }else if(name === "style"){
+
 				    }else if(name === "require" && attribs["from"]){
 				    	if(attribs.from.lastIndexOf(".css!") > -1){
 				    		modules_css_to_import.push(attribs.from);
@@ -106,39 +133,34 @@ module.exports = function(opt) {
 							modules_to_import.push(tagobject.url+'.html');
 							modules_alias_to_import.push("_"+tagobject.tag.replace(/-/g,"_")+"_");				    		
 				    	}
+				    }else if(name === "compose" && attribs["view"]){
+				    	//compose a element
+				    	var separate_attrs = separateAttribs(attribs);
+				    	var mod_tmp_attr_str = attrToContext(separate_attrs.dinamic);
+				    	var mod_tmp_static_attr_str = JSON.stringify(separate_attrs.static);
+				    	renderIDOMHTML += ' _libfjs_mod_.AuxClass.prototype.compose.call(null,"'+attribs["view"]+'",'+mod_tmp_attr_str+','+mod_tmp_static_attr_str+',function(){ \n';
 				    }else if(name.indexOf("-") > -1){
 				    	var mod_temp_name_tag = '_'+name.replace(/-/g,"_")+'_';
 						mod_temp_inst = 'tmp_inst_'+mod_temp_name_tag+nextUID();
 				    	renderIDOMHTML += ' var '+mod_temp_inst+' = new '+mod_temp_name_tag+'.default();\n';
-				    	var mod_tmp_attr = {};
-				    	for (var key in attribs) {
-				    		if(key.indexOf(".") > 0){				    			
-				    			mod_tmp_attr[key] = "${"+appendContext(attribs[key])+"}";				    			
-				    		}else{				    			
-				    			if(attribs[key].indexOf("${") === 0){
-				    				mod_tmp_attr[key] = appendContext(attribs[key]);
-				    			}else{
-				    				mod_tmp_attr[key] = attribs[key];
-				    			}				    			
-				    		}				    		
-				    	}
-				    	var mod_tmp_attr_str = JSON.stringify(mod_tmp_attr)
-				    									.replace(/"\$\{/g,'(')
-				    									.replace(/\}"/g,')');
+				    	
+				    	var separate_attrs = separateAttribs(attribs);
+				    	var mod_tmp_attr_str = attrToContext(separate_attrs.dinamic);
+				    	var mod_tmp_static_attr_str = JSON.stringify(separate_attrs.static);
 
-				    	renderIDOMHTML += ' _libfjs_mod_.AuxClass.prototype.configComponent.call('+mod_temp_inst+',"'+name+'","'+mod_temp_inst+'",'+mod_tmp_attr_str+');\n';
+				    	renderIDOMHTML += ' _libfjs_mod_.AuxClass.prototype.configComponent.call('+mod_temp_inst+',"'+name+'","'+mod_temp_inst+'",'+mod_tmp_attr_str+','+mod_tmp_static_attr_str+');\n';
 				    	renderIDOMHTML += ' '+mod_temp_inst+'.content(function(){ \n';
 
 				    }else if(name==="for"){
 				    	var array_each = attribs.each.split(" in ");
 				    	var sub_array_each = array_each[0].split(",");
-				    	var index_array = "";
+				    	index_array = "$key_tmp_"+nextUID();
 				    	if(sub_array_each.length > 1){
-				    		index_array = ","+sub_array_each[1];
+				    		index_array = sub_array_each[1];
 				    		lasts_index_alias.push(sub_array_each[1]);
 				    	}
 				    	lasts_item_alias.push(sub_array_each[0]);
-				    	renderIDOMHTML += '\t'+appendContext(array_each[1])+'.forEach(function('+sub_array_each[0]+index_array+'){\n';
+				    	renderIDOMHTML += '\t'+appendContext(array_each[1])+'.forEach(function('+sub_array_each[0]+','+index_array+'){\n';
 				    }else if(name==="if"){
 				    	renderIDOMHTML += '\tif('+appendContext(attribs.condition)+'){\n';
 				    }else if(name==="elseif"){
@@ -146,15 +168,16 @@ module.exports = function(opt) {
 				    }else{
 				    	//is a normal tag
 						var obj_array = [];		
-						var bindField = "";				
+						var bindField = "";	
+						var obj_array_static = [];			
 						for(var key in attribs){	
 							if(key.indexOf("value.bind") > -1 && (name==="input" || name==="textarea" || name==="select")){
 								if(name==="select"){
 									obj_array.push('onchange');
-									obj_array.push('#{#function($evt){var tmp_$target$_evt=$evt.target;'+appendContext(attribs[key])+'=tmp_$target$_evt.options[tmp_$target$_evt.selectedIndex].value;'+render_controller_alias+'.refresh()}#}#');
+									obj_array.push('#{#function($evt){\nvar tmp_$target$_evt=$evt.target;\n'+appendContext(attribs[key])+'=tmp_$target$_evt.options[tmp_$target$_evt.selectedIndex].value;\n'+render_controller_alias+'.refresh();\n}#}#');
 								}else{
 									obj_array.push('onkeyup');
-									obj_array.push('#{#function($evt){'+appendContext(attribs[key])+'=$evt.target.value;'+render_controller_alias+'.refresh()}#}#');
+									obj_array.push('#{#function($evt){\n'+appendContext(attribs[key])+'=$evt.target.value;\n'+render_controller_alias+'.refresh()\n}\n#}#');
 								}								
 							}else if(key.indexOf(".") > 0){
 								obj_array.push('on'+key.substring(0,key.indexOf("."))+'');
@@ -167,26 +190,26 @@ module.exports = function(opt) {
 									fnkey = fnkey.substring(0,argsInitIndex);
 								}								
 								obj_array.push('${'+fnkey+'.bind'+argslist+'}');								
-							}else{
-								obj_array.push(''+key+'');
-								//console.log(attribs[key]);
-								
+							}else{								
 								if(typeof attribs[key] === "string" && attribs[key].indexOf("${") === 0){
+									obj_array.push(''+key+'');
 									obj_array.push(appendContext(attribs[key]));
-								}else{
-									obj_array.push(attribs[key]);
+								}else{	
+									obj_array_static.push(''+key+'');								
+									obj_array_static.push(attribs[key]);
 								}
 							}							
 						}
-						var mod_tmp_attr_str_ = '["'+obj_array.join('","')+'"]';
+						var mod_tmp_attr_str_ = '"'+obj_array.join('","')+'"';
+						var mod_tmp_static_attr_str =  '["'+obj_array_static.join('","')+'"]';
 						
 						var mod_tmp_attr_str = mod_tmp_attr_str_.replace(/\"\$\{([^}]*)\}\"/g,function($1,$2){
   							return "("+$2+")";
 						});	
 						mod_tmp_attr_str = mod_tmp_attr_str.replace(/\"#{#/g,"(");
 						mod_tmp_attr_str = mod_tmp_attr_str.replace(/#}#\"/g,")");
-						
-				    	renderIDOMHTML += '_idom.elementOpen("'+name+'",null,'+mod_tmp_attr_str+');\n';
+						var static_key = "key_"+nextUID();
+				    	renderIDOMHTML += '_idom.elementOpen("'+name+'","'+static_key+'_"+'+(index_array?index_array:'""')+','+mod_tmp_static_attr_str+','+mod_tmp_attr_str+');\n';
 				    }
 				},
 				ontext: function(text){
@@ -200,9 +223,9 @@ module.exports = function(opt) {
 							console.log(text);
 						}else if(["template","if","each","require","style"].indexOf(lastTag) < 0){
 							renderIDOMHTML += '_idom.text("'+text.trim().replace(/\$\{([^}]*)\}/g,function($1,$2){
-  							//console.log($2);
-  							return '"+('+appendContext($2)+')+"';
-						})+'");\n';
+  								//console.log($2);
+  								return '"+('+appendContext($2)+')+"';
+							})+'");\n';
 						}
 					}				  
 				    lastTag = "";
@@ -214,6 +237,8 @@ module.exports = function(opt) {
 				        
 				    }else if(tagname === "script"){
 				       
+				    }else if(tagname === "compose"){
+				       renderIDOMHTML += ' });\n';
 				    }else if(tagname.indexOf("-") > -1){				    	
 				    	renderIDOMHTML += ' }).refresh();\n';
 				    	mod_temp_inst = '';
@@ -223,7 +248,8 @@ module.exports = function(opt) {
 				    	renderIDOMHTML += '\n\t};\n';
 				    }else if(["for"].indexOf(tagname) > -1){
 				    	renderIDOMHTML += '\n\t});\n';
-				    }else if(["require","style"].indexOf(tagname) < 0){
+				    	index_array = "";
+				    }else if(["require","style","compose"].indexOf(tagname) < 0){
 				    	renderIDOMHTML += '_idom.elementClose("'+tagname+'");\n';
 				    }
 				}
