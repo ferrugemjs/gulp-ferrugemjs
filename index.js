@@ -190,6 +190,8 @@ module.exports = function(opt) {
 				    	renderIDOMHTML += '\tif('+appendContext(attribs.condition)+'){\n';
 				    }else if(name==="elseif"){
 				    	renderIDOMHTML += '\t}else if('+appendContext(attribs.condition)+'){\n';
+				    }else if(name==="else"){
+				    	renderIDOMHTML += '\t}else{\n';
 				    }else{
 				    	//is a normal tag
 						var obj_array = [];		
@@ -260,14 +262,12 @@ module.exports = function(opt) {
 				    }else if(tagname.indexOf("-") > -1){				    	
 				    	renderIDOMHTML += ' }).refresh();\n';
 				    	mod_temp_inst = '';
-				    }else if(["else"].indexOf(tagname) > -1){
-				    	renderIDOMHTML += '\n\t}else{\n';
 				    }else if(["if"].indexOf(tagname) > -1){
 				    	renderIDOMHTML += '\n\t};\n';
 				    }else if(["for"].indexOf(tagname) > -1){
 				    	renderIDOMHTML += '\n\t});\n';
 				    	index_array = "";
-				    }else if(["require","style","compose"].indexOf(tagname) < 0){
+				    }else if(["require","style","compose","else","elseif"].indexOf(tagname) < 0){
 				    	renderIDOMHTML += '_idom.elementClose("'+tagname+'");\n';
 				    }
 				}
