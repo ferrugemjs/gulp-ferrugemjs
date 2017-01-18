@@ -41,17 +41,17 @@ function appendContext(str){
 
 function getALias(p_resource_url){
 		var patt_alias = / as\W+(\w.+)/g;
-		var _tagname;
+		var _aliasname;
 		var _trueurl;
 		if(patt_alias.test(p_resource_url)){
 			var _urlsplit = p_resource_url.split(' as ');
 			_trueurl = _urlsplit[0];
-			_tagname = _urlsplit[1];
+			_aliasname = _urlsplit[1];
 		}else{
 			_trueurl = p_resource_url;
-			_tagname = p_resource_url.substring(p_resource_url.lastIndexOf("/")+1,p_resource_url.length);
+			_aliasname = p_resource_url.substring(p_resource_url.lastIndexOf("/")+1,p_resource_url.length);
 		};
-		return {tag:_tagname,url:_trueurl};
+		return {alias:_aliasname,url:_trueurl};
 }
 function formatContext(value){
 	return value
@@ -149,12 +149,17 @@ module.exports = function(opt) {
 				    }else if(name === "style"){
 
 				    }else if(name === "require" && attribs["from"]){
-				    	if(attribs.from.lastIndexOf(".css!") > -1){
-				    		modules_css_to_import.push(attribs.from);
-				    	}else{		
-				    		var tagobject = getALias(attribs.from);												
+				    	var fromstr = attribs.from;
+				    	if(fromstr.lastIndexOf(".css!") > -1){
+				    		modules_css_to_import.push(fromstr);
+				    	}else if(attribs.type && attribs.type==="library"){		
+				    		var fromobject = getALias(fromstr);										
+							modules_to_import.push(fromobject.url);
+							modules_alias_to_import.push(fromobject.alias.replace(/-/g,"_"));				    		
+				    	}else{
+							var tagobject = getALias(fromstr);										
 							modules_to_import.push(tagobject.url+'.html');
-							modules_alias_to_import.push("_"+tagobject.tag.replace(/-/g,"_")+"_");				    		
+							modules_alias_to_import.push("_"+tagobject.alias.replace(/-/g,"_")+"_");
 				    	}
 				    }else if(name === "compose" && attribs["view"]){
 				    	//compose a element
@@ -313,3 +318,4 @@ module.exports = function(opt) {
 		callback();
 	});
 };
+
