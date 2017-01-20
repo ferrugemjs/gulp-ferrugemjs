@@ -202,13 +202,14 @@ module.exports = function(opt) {
 						var obj_array = [];		
 						var bindField = "";	
 						var obj_array_static = [];			
-						for(var key in attribs){	
-							if(key.indexOf("value.bind") > -1 && (name==="input" || name==="textarea" || name==="select")){
-								if(name==="select"){
-									obj_array.push('onchange');
+						for(var key in attribs){
+							var indxBind = 	key.indexOf(".bind");
+							if(indxBind > -1 && (name==="input" || name==="textarea" || name==="select")){
+								var evtstr = "on"+key.substring(0,indxBind);
+								obj_array.push(evtstr);
+								if(name==="select"){									
 									obj_array.push('#{#function($evt){\nvar tmp_$target$_evt=$evt.target;\n'+appendContext(attribs[key])+'=tmp_$target$_evt.options[tmp_$target$_evt.selectedIndex].value;\n'+render_controller_alias+'.refresh();\n}#}#');
-								}else{
-									obj_array.push('onkeyup');
+								}else{									
 									obj_array.push('#{#function($evt){\n'+appendContext(attribs[key])+'=$evt.target.value;\n'+render_controller_alias+'.refresh()\n}\n#}#');
 								}								
 							}else if(key.indexOf(".") > 0){
@@ -318,4 +319,5 @@ module.exports = function(opt) {
 		callback();
 	});
 };
+
 
