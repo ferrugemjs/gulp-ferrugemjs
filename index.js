@@ -188,18 +188,32 @@ module.exports = function(opt) {
 				    	var mod_tmp_static_attr_str = JSON.stringify(separate_attrs.static);
 				    	//console.log(attribs["view"],formatContext('"'+attribs["view"]+'"'),formatContext('"'+'chora-nao bebe'+'"'))
 				    	renderIDOMHTML += ' _libfjs_mod_.AuxClass.prototype.compose.call(null,'+formatContext('"'+attribs["view"]+'"')+','+mod_tmp_attr_str+','+mod_tmp_static_attr_str+',function(){ \n';
-				    }else if(name.indexOf(":") > -1){
-				    	var namespace = name.substring(0,name.indexOf(":"));
-				    	var tmpname = name.substring(name.indexOf(":")+1,name.length);
-				    	var mod_temp_name_tag = tmpname.replace(/-/g,"_");
-				    	var ns_mod_temp_name_tag = namespace+'.'+mod_temp_name_tag;
+				    }else if(name.indexOf(":") > -1 || name.indexOf("-") > -1){
+
+						var namespace = "";
+						var tagname = "";
+						var tagname_underscore = "";
+						var tagname_with_namespace = "";
+						var tagname_constructor = "";
+
+						if(name.indexOf(":") > -1){
+							namespace = name.substring(0,name.indexOf(":"));
+							tagname = name.substring(name.indexOf(":")+1,name.length);
+							tagname_underscore = tagname.replace(/-/g,"_");
+							tagname_with_namespace = namespace+'.'+tagname_underscore;
+							tagname_constructor = tagname_with_namespace;
+						}else{
+							namespace = "";
+							tagname = name;
+							tagname_underscore = tagname.replace(/-/g,"_");
+							tagname_with_namespace = tagname_underscore;
+							tagname_constructor = '_'+tagname_with_namespace+'_'+'.default';							
+						}					
+	
+						//console.log(namespace,"#",tagname,"#",tagname_underscore,"#",tagname_with_namespace,"#",tagname_constructor);
 						
-						//console.log(mod_temp_name_tag);
-				    	
-				    	//var mod_temp_name_tag = '_'+name.replace(/-/g,"_").replace(":","_")+'_';
-						
-						mod_temp_inst = 'tmp_inst_'+mod_temp_name_tag+nextUID();
-				    	renderIDOMHTML += ' var '+mod_temp_inst+' = new '+ns_mod_temp_name_tag+'();\n';
+						mod_temp_inst = 'tmp_inst_'+tagname_underscore+nextUID();
+				    	renderIDOMHTML += ' var '+mod_temp_inst+' = new '+tagname_constructor+'();\n';
 				    	
 				    	var separate_attrs = separateAttribs(attribs);
 				    	separate_attrs.static.is = name;
@@ -207,25 +221,9 @@ module.exports = function(opt) {
 				    	var mod_tmp_static_attr_str = JSON.stringify(separate_attrs.static);
 				    	//console.log(mod_tmp_attr_str);
 
-				    	renderIDOMHTML += ' _libfjs_mod_.AuxClass.prototype.configComponent.call('+mod_temp_inst+',"'+tmpname+'","'+mod_temp_inst+'",'+mod_tmp_attr_str+','+mod_tmp_static_attr_str+');\n';
-				    	renderIDOMHTML += ' '+mod_temp_inst+'.content(function(){ \n';
+				    	renderIDOMHTML += ' _libfjs_mod_.AuxClass.prototype.configComponent.call('+mod_temp_inst+',"'+tagname+'","'+mod_temp_inst+'",'+mod_tmp_attr_str+','+mod_tmp_static_attr_str+');\n';
+				    	renderIDOMHTML += ' '+mod_temp_inst+'.content(function(){ \n';						
 						
-						//console.log(name,"#",namespace,"#",tmpname);
-				    }else if(name.indexOf("-") > -1){
-				    	var mod_temp_name_tag = '_'+name.replace(/-/g,"_")+'_';
-						mod_temp_inst = 'tmp_inst_'+mod_temp_name_tag+nextUID();
-				    	renderIDOMHTML += ' var '+mod_temp_inst+' = new '+mod_temp_name_tag+'.default();\n';
-				       	var tmpname = name;
-				    	
-
-				    	var separate_attrs = separateAttribs(attribs);
-				    	var mod_tmp_attr_str = attrToContext(separate_attrs.dinamic);
-				    	var mod_tmp_static_attr_str = JSON.stringify(separate_attrs.static);
-				    	//console.log(mod_tmp_attr_str);
-
-				    	renderIDOMHTML += ' _libfjs_mod_.AuxClass.prototype.configComponent.call('+mod_temp_inst+',"'+tmpname+'","'+mod_temp_inst+'",'+mod_tmp_attr_str+','+mod_tmp_static_attr_str+');\n';
-				    	renderIDOMHTML += ' '+mod_temp_inst+'.content(function(){ \n';
-
 				    }else if(name==="for"){
 				    	var array_each = attribs.each.split(" in ");
 				    	var sub_array_each = array_each[0].split(",");
@@ -279,8 +277,9 @@ module.exports = function(opt) {
 						});	
 						mod_tmp_attr_str = mod_tmp_attr_str.replace(/\"#{#/g,"(");
 						mod_tmp_attr_str = mod_tmp_attr_str.replace(/#}#\"/g,")");
-						var static_key = "key_"+nextUID();
-				    	renderIDOMHTML += '_idom.elementOpen("'+name+'","'+static_key+'_"+'+(index_array?index_array:'""')+','+mod_tmp_static_attr_str+','+mod_tmp_attr_str+');\n';
+						var static_key = (attribs.id)?attribs.id+'"':"key_"+nextUID()+'_"+'+(index_array?index_array:'""');
+						//console.log(static_key);
+				    	renderIDOMHTML += '_idom.elementOpen("'+name+'","'+static_key+','+mod_tmp_static_attr_str+','+mod_tmp_attr_str+');\n';
 				    }
 				},
 				ontext: function(text){
