@@ -219,7 +219,7 @@ module.exports = function(opt) {
 				    	separate_attrs.static.is = name;
 				    	var mod_tmp_attr_str = attrToContext(separate_attrs.dinamic);
 				    	var mod_tmp_static_attr_str = JSON.stringify(separate_attrs.static);
-				    	//console.log(mod_tmp_attr_str);
+				    	//console.log(mod_tmp_attr_str,'#',mod_tmp_static_attr_str);
 
 				    	renderIDOMHTML += ' _libfjs_mod_.AuxClass.prototype.configComponent.call('+mod_temp_inst+',"'+tagname+'","'+mod_temp_inst+'",'+mod_tmp_attr_str+','+mod_tmp_static_attr_str+');\n';
 				    	renderIDOMHTML += ' '+mod_temp_inst+'.content(function(){ \n';						
@@ -290,7 +290,7 @@ module.exports = function(opt) {
 							appendBuffer("tmp_style.innerHTML = '"+text.replace(/\n/g,'')+"';");
 							appendBuffer("document.getElementsByTagName('head')[0].appendChild(tmp_style);");
 						}else if(lastTag.indexOf("-") > -1){
-							console.log(text);
+							//console.log(text);
 						}else if(["template","if","each","require","style"].indexOf(lastTag) < 0){
 							renderIDOMHTML += '_idom.text("'+text.trim().replace(/\$\{([^}]*)\}/g,function($1,$2){
   								//console.log($2);
