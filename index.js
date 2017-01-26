@@ -128,7 +128,7 @@ module.exports = function(opt) {
 			var mod_temp_inst = "";
 			var className = "";
 			var index_array = "";
-			var modulesXMLNS = [];
+			
 			var parser = new htmlparser.Parser({
 				onopentag: function(name, attribs){
 					lastTag = name;
@@ -142,25 +142,7 @@ module.exports = function(opt) {
 				    	//var uid = "uid_"+nextUID();
 				    	//renderIDOMHTML += '_idom.elementOpen("div","'+uid+'",["id","'+uid+'","class","'+className+'"]);\n';
 				    	//renderIDOMHTML += '_idom.elementOpen("div","'+uid+'",["id","'+uid+'","class","'+className+'"]);\n';
-				    	//renderIDOMHTML += '_idom.elementOpen("div",'+render_controller_alias+'._$el$domref.static_vars.id,["data-target",'+render_controller_alias+'._$el$domref.target,"id",'+render_controller_alias+'._$el$domref.static_vars.id,"class","'+className+'"]);\n';	
-				    	for(var attr in attribs){
-				    		//console.log(attr);				    		
-				    		var xmlnsIndex = attr.indexOf("xmlns:");
-				    		if(xmlnsIndex > -1){
-				    			//console.log(attribs[attr]);
-				    			modulesXMLNS.push({
-				    				namespace:attr.substring(6,attr.length)
-				    				,vendor:attribs[attr]
-				    			});
-				    		}
-				    	}
-
-				    	modulesXMLNS.forEach(function(_mod_namespace_){
-				    		modules_to_import.push(_mod_namespace_.vendor);
-							modules_alias_to_import.push(_mod_namespace_.namespace);
-				    	});
-
-				    	//console.log(modulesXMLNS);
+				    	//renderIDOMHTML += '_idom.elementOpen("div",'+render_controller_alias+'._$el$domref.static_vars.id,["data-target",'+render_controller_alias+'._$el$domref.target,"id",'+render_controller_alias+'._$el$domref.static_vars.id,"class","'+className+'"]);\n';
 
 				    }else if(name === "script"){
 				    	//avoid script support
@@ -172,14 +154,18 @@ module.exports = function(opt) {
 				    	var fromstr = attribs.from;
 				    	if(fromstr.lastIndexOf(".css!") > -1){
 				    		modules_css_to_import.push(fromstr);
-				    	}else if(attribs.type && attribs.type==="library"){		
+				    	}else if(attribs.type && attribs.type==="script"){		
 				    		var fromobject = getALias(fromstr);										
 							modules_to_import.push(fromobject.url);
 							modules_alias_to_import.push(fromobject.alias.replace(/-/g,"_"));				    		
+				    	}else if(attribs.type && attribs.type==="namespace"){		
+							var tagobject = getALias(fromstr);										
+							modules_to_import.push(tagobject.url);
+							modules_alias_to_import.push("_"+tagobject.alias.replace(/-/g,"_"));				    		
 				    	}else{
 							var tagobject = getALias(fromstr);										
 							modules_to_import.push(tagobject.url+'.html');
-							modules_alias_to_import.push("_"+tagobject.alias.replace(/-/g,"_")+"_");
+							modules_alias_to_import.push("_"+tagobject.alias.replace(/-/g,"_"));
 				    	}
 				    }else if(name === "compose" && attribs["view"]){
 				    	//compose a element
@@ -201,13 +187,13 @@ module.exports = function(opt) {
 							tagname = name.substring(name.indexOf(":")+1,name.length);
 							tagname_underscore = tagname.replace(/-/g,"_");
 							tagname_with_namespace = namespace+'.'+tagname_underscore;
-							tagname_constructor = tagname_with_namespace;
+							tagname_constructor = '_'+tagname_with_namespace;
 						}else{
 							namespace = "";
 							tagname = name;
 							tagname_underscore = tagname.replace(/-/g,"_");
 							tagname_with_namespace = tagname_underscore;
-							tagname_constructor = '_'+tagname_with_namespace+'_'+'.default';							
+							tagname_constructor = '_'+tagname_with_namespace+'.default';							
 						}					
 	
 						//console.log(namespace,"#",tagname,"#",tagname_underscore,"#",tagname_with_namespace,"#",tagname_constructor);
