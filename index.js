@@ -172,6 +172,7 @@ module.exports = function(opt) {
 				    	var separate_attrs = separateAttribs(attribs);
 				    	var mod_tmp_attr_str = attrToContext(separate_attrs.dinamic);
 				    	var mod_tmp_static_attr_str = JSON.stringify(separate_attrs.static);
+				    	//var tmp_key = attribs["key:id"]?attribs["key:id"]:"";
 				    	//console.log(attribs["view"],formatContext('"'+attribs["view"]+'"'),formatContext('"'+'chora-nao bebe'+'"'))
 				    	renderIDOMHTML += ' _libfjs_mod_.AuxClass.prototype.compose.call(null,'+formatContext('"'+attribs["view"]+'"')+','+mod_tmp_attr_str+','+mod_tmp_static_attr_str+',function(){ \n';
 				    }else if(name.indexOf(":") > -1 || name.indexOf("-") > -1){
@@ -181,6 +182,7 @@ module.exports = function(opt) {
 						var tagname_underscore = "";
 						var tagname_with_namespace = "";
 						var tagname_constructor = "";
+
 
 						if(name.indexOf(":") > -1){
 							namespace = name.substring(0,name.indexOf(":"));
@@ -197,8 +199,14 @@ module.exports = function(opt) {
 						}					
 	
 						//console.log(namespace,"#",tagname,"#",tagname_underscore,"#",tagname_with_namespace,"#",tagname_constructor);
+						var key_uid = tagname_underscore+nextUID();
 						
-						mod_temp_inst = 'tmp_inst_'+tagname_underscore+nextUID();
+						if(attribs["key:id"]){
+							key_uid = attribs["key:id"];
+						}
+
+						mod_temp_inst = 'tmp_inst_'+key_uid;
+
 				    	renderIDOMHTML += ' var '+mod_temp_inst+' = new '+tagname_constructor+'();\n';
 				    	
 				    	var separate_attrs = separateAttribs(attribs);
