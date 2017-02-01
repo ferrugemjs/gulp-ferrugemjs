@@ -174,7 +174,7 @@ module.exports = function(opt) {
 				    	var mod_tmp_static_attr_str = JSON.stringify(separate_attrs.static);
 				    	var tmp_key = attribs["key:id"]?appendContext(attrToContext(attribs["key:id"])):"null";
 				    	//console.log(attribs["view"],formatContext('"'+attribs["view"]+'"'),formatContext('"'+'chora-nao bebe'+'"'))
-				    	var tmp_id = attribs["key:id"]?tmp_key:'"tmp_inst_compose_view'+nextUID()+'"';
+				    	var tmp_id = attribs["key:id"]?tmp_key:'"tmp_inst_compose_view'+nextUID()+'_'+index_array+'"';
 
 				    	renderIDOMHTML += '_idom.elementOpen("compose-view",'+tmp_key+','+'["is","compose-view","id",'+tmp_id+']'+');\n';
 				    	renderIDOMHTML += '_idom.elementClose("compose-view");\n';
@@ -208,7 +208,7 @@ module.exports = function(opt) {
 						}					
 	
 						//console.log(namespace,"#",tagname,"#",tagname_underscore,"#",tagname_with_namespace,"#",tagname_constructor);
-						var key_uid = 'tmp_inst_'+tagname_underscore+nextUID();
+						var key_uid = 'tmp_inst_'+tagname_underscore+nextUID()+'_'+index_array;
 						
 						if(attribs["key:id"]){
 							key_uid = attribs["key:id"];
