@@ -176,11 +176,17 @@ module.exports = function(opt) {
 				    	//console.log(attribs["view"],formatContext('"'+attribs["view"]+'"'),formatContext('"'+'chora-nao bebe'+'"'))
 				    	var tmp_id = attribs["key:id"]?tmp_key:'"tmp_inst_compose_view'+nextUID()+'_'+index_array+'"';
 
-				    	renderIDOMHTML += '_idom.elementOpen("compose-view",'+tmp_key+','+'["is","compose-view","id",'+tmp_id+']'+');\n';
+						var key_with_array_index = tmp_id;
+						if((!attribs["key:id"]) && index_array){							
+							key_with_array_index = key_with_array_index+'+"_"+('+index_array+')';
+						}
+
+
+				    	renderIDOMHTML += '_idom.elementOpen("compose-view",'+key_with_array_index+','+'["is","compose-view","id",'+key_with_array_index+']'+');\n';
 				    	renderIDOMHTML += '_idom.elementClose("compose-view");\n';
 
 
-				    	renderIDOMHTML += ' _libfjs_mod_.default.compose('+formatContext('"'+attribs["view"]+'"')+','+tmp_id+','+mod_tmp_attr_str+','+mod_tmp_static_attr_str+',function(){ \n';
+				    	renderIDOMHTML += ' _libfjs_mod_.default.compose('+formatContext('"'+attribs["view"]+'"')+','+key_with_array_index+','+mod_tmp_attr_str+','+mod_tmp_static_attr_str+',function(){ \n';
 				    
 				    
 
@@ -208,7 +214,7 @@ module.exports = function(opt) {
 						}					
 	
 						//console.log(namespace,"#",tagname,"#",tagname_underscore,"#",tagname_with_namespace,"#",tagname_constructor);
-						var key_uid = 'tmp_inst_'+tagname_underscore+nextUID()+'_'+index_array;
+						var key_uid = 'tmp_inst_'+tagname_underscore+nextUID();//+'_'+index_array;						
 						
 						if(attribs["key:id"]){
 							key_uid = attribs["key:id"];
@@ -216,6 +222,14 @@ module.exports = function(opt) {
 
 						mod_temp_inst = appendContext(attrToContext(key_uid));
 
+						var key_with_array_index = mod_temp_inst;
+
+
+						if((!attribs["key:id"]) && index_array){							
+							key_with_array_index = key_with_array_index+'+"_"+('+index_array+')';
+						}
+
+						//console.log(key_uid,key_with_array_index,index_array);
 
 						//console.log(key_uid,mod_temp_inst);
 
@@ -227,7 +241,7 @@ module.exports = function(opt) {
 				    	var _tmp_static_vars = JSON.stringify(separate_attrs.static);
 				    	//console.log(mod_tmp_attr_str,'#',mod_tmp_static_attr_str);
 
-				    	renderIDOMHTML += '_idom.elementOpen("'+tagname+'",'+mod_temp_inst+','+'["is","'+tagname+'","id",'+mod_temp_inst+']'+','+'null'+');\n';
+				    	renderIDOMHTML += '_idom.elementOpen("'+tagname+'",'+key_with_array_index+','+'["is","'+tagname+'","id",'+key_with_array_index+']'+','+'null'+');\n';
 				    	renderIDOMHTML += '_idom.elementClose("'+tagname+'");\n';
 				    
 				    	//renderIDOMHTML += ' new '+tagname_constructor+'().refresh();\n';
@@ -235,7 +249,7 @@ module.exports = function(opt) {
 								//,staticVars:{}		
 								
 
-				    	renderIDOMHTML += ' var _$_inst_$_ = _libfjs_mod_.default.build({"classFactory":'+tagname_constructor+',"tagName":"'+tagname+'","target":'+mod_temp_inst+',"hostVars":'+_tmp_host_vars_+',"staticVars":'+_tmp_static_vars+'});\n';
+				    	renderIDOMHTML += ' var _$_inst_$_ = _libfjs_mod_.default.build({"classFactory":'+tagname_constructor+',"tagName":"'+tagname+'","target":'+key_with_array_index+',"hostVars":'+_tmp_host_vars_+',"staticVars":'+_tmp_static_vars+'});\n';
 				    		
 
 				    	//renderIDOMHTML += ' _libfjs_mod_.AuxClass.prototype.configComponent.call('+mod_temp_inst+',"'+tagname+'","'+mod_temp_inst+'",'+mod_tmp_attr_str+','+mod_tmp_static_attr_str+');\n';
