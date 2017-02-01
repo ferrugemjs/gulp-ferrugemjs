@@ -177,7 +177,7 @@ module.exports = function(opt) {
 				    	tmp_key = appendContext(tmp_key);  
 				    	var tmp_id = attribs["key:id"]?tmp_key:'"tmp_inst_compose_view'+nextUID()+'"';
 
-				    	renderIDOMHTML += '_idom.elementOpen("compose-view",'+tmp_key+','+'["id",'+tmp_id+']'+');\n';
+				    	renderIDOMHTML += '_idom.elementOpen("compose-view",'+tmp_key+','+'["is","compose-view","id",'+tmp_id+']'+');\n';
 				    	renderIDOMHTML += '_idom.elementClose("compose-view");\n';
 
 
@@ -225,7 +225,7 @@ module.exports = function(opt) {
 				    	var _tmp_static_vars = JSON.stringify(separate_attrs.static);
 				    	//console.log(mod_tmp_attr_str,'#',mod_tmp_static_attr_str);
 
-				    	renderIDOMHTML += '_idom.elementOpen("'+tagname+'","'+mod_temp_inst+'",'+'["id","'+mod_temp_inst+'"]'+','+'null'+');\n';
+				    	renderIDOMHTML += '_idom.elementOpen("'+tagname+'","'+mod_temp_inst+'",'+'["is","'+tagname+'","id","'+mod_temp_inst+'"]'+','+'null'+');\n';
 				    	renderIDOMHTML += '_idom.elementClose("'+tagname+'");\n';
 				    
 				    	//renderIDOMHTML += ' new '+tagname_constructor+'().refresh();\n';
