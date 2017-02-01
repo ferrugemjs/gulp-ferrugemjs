@@ -172,9 +172,8 @@ module.exports = function(opt) {
 				    	var separate_attrs = separateAttribs(attribs);
 				    	var mod_tmp_attr_str = attrToContext(separate_attrs.dinamic);
 				    	var mod_tmp_static_attr_str = JSON.stringify(separate_attrs.static);
-				    	var tmp_key = attribs["key:id"]?attrToContext(attribs["key:id"]):"null";
+				    	var tmp_key = attribs["key:id"]?appendContext(attrToContext(attribs["key:id"])):"null";
 				    	//console.log(attribs["view"],formatContext('"'+attribs["view"]+'"'),formatContext('"'+'chora-nao bebe'+'"'))
-				    	tmp_key = appendContext(tmp_key);  
 				    	var tmp_id = attribs["key:id"]?tmp_key:'"tmp_inst_compose_view'+nextUID()+'"';
 
 				    	renderIDOMHTML += '_idom.elementOpen("compose-view",'+tmp_key+','+'["is","compose-view","id",'+tmp_id+']'+');\n';
@@ -215,7 +214,10 @@ module.exports = function(opt) {
 							key_uid = attribs["key:id"];
 						}
 
-						mod_temp_inst = key_uid;
+						mod_temp_inst = appendContext(attrToContext(key_uid));
+
+
+						//console.log(key_uid,mod_temp_inst);
 
 				    	//renderIDOMHTML += ' var '+mod_temp_inst+' = new '+tagname_constructor+'();\n';
 				    	
@@ -225,7 +227,7 @@ module.exports = function(opt) {
 				    	var _tmp_static_vars = JSON.stringify(separate_attrs.static);
 				    	//console.log(mod_tmp_attr_str,'#',mod_tmp_static_attr_str);
 
-				    	renderIDOMHTML += '_idom.elementOpen("'+tagname+'","'+mod_temp_inst+'",'+'["is","'+tagname+'","id","'+mod_temp_inst+'"]'+','+'null'+');\n';
+				    	renderIDOMHTML += '_idom.elementOpen("'+tagname+'",'+mod_temp_inst+','+'["is","'+tagname+'","id",'+mod_temp_inst+']'+','+'null'+');\n';
 				    	renderIDOMHTML += '_idom.elementClose("'+tagname+'");\n';
 				    
 				    	//renderIDOMHTML += ' new '+tagname_constructor+'().refresh();\n';
@@ -233,11 +235,11 @@ module.exports = function(opt) {
 								//,staticVars:{}		
 								
 
-				    	renderIDOMHTML += ' var '+mod_temp_inst+' = _libfjs_mod_.default.build({"classFactory":'+tagname_constructor+',"tagName":"'+tagname+'","target":"'+mod_temp_inst+'","hostVars":'+_tmp_host_vars_+',"staticVars":'+_tmp_static_vars+'});\n';
+				    	renderIDOMHTML += ' var _$_inst_$_ = _libfjs_mod_.default.build({"classFactory":'+tagname_constructor+',"tagName":"'+tagname+'","target":'+mod_temp_inst+',"hostVars":'+_tmp_host_vars_+',"staticVars":'+_tmp_static_vars+'});\n';
 				    		
 
 				    	//renderIDOMHTML += ' _libfjs_mod_.AuxClass.prototype.configComponent.call('+mod_temp_inst+',"'+tagname+'","'+mod_temp_inst+'",'+mod_tmp_attr_str+','+mod_tmp_static_attr_str+');\n';
-				    	renderIDOMHTML += ' '+mod_temp_inst+'.content(function(){ \n';						
+				    	renderIDOMHTML += ' _$_inst_$_.content(function(){ \n';						
 						
 				    }else if(name==="for"){
 				    	var array_each = attribs.each.split(" in ");
