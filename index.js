@@ -322,9 +322,7 @@ module.exports = function(opt) {
 							appendBuffer("tmp_style.type = 'text/css';");
 							appendBuffer("tmp_style.innerHTML = '"+text.replace(/\n/g,'')+"';");
 							appendBuffer("document.getElementsByTagName('head')[0].appendChild(tmp_style);");
-						}else if(lastTag.indexOf("-") > -1){
-							//console.log(text);
-						}else if(["template","if","each","require","style"].indexOf(lastTag) < 0){
+						}else if(lastTag.indexOf("-") > -1 || ["template","if","for","require","style"].indexOf(lastTag) < 0){
 							renderIDOMHTML += '_idom.text("'+text.trim().replace(/\$\{([^}]*)\}/g,function($1,$2){
   								//console.log($2);
   								return '"+('+appendContext($2)+')+"';
