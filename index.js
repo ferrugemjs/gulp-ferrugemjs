@@ -117,7 +117,7 @@ module.exports = function(opt) {
 			var fileName = file.path;
 			fileName = fileName.match(/(\w|[-.])+$/g)[0];
 			fileName = fileName.substring(0,fileName.length-5);
-		
+			var viewModel = './'+fileName;
 			var tmp_mod_name = "_mod_"+fileName.replace(/-/g,"_")+"_"+new Date().getTime();
 			var templateFile = new Buffer(decoder.write(file.contents));
 			var modules_to_import = [];
@@ -144,6 +144,11 @@ module.exports = function(opt) {
 				    	//renderIDOMHTML += '_idom.elementOpen("div","'+uid+'",["id","'+uid+'","class","'+className+'"]);\n';
 				    	//renderIDOMHTML += '_idom.elementOpen("div",'+render_controller_alias+'._$el$domref.static_vars.id,["data-target",'+render_controller_alias+'._$el$domref.target,"id",'+render_controller_alias+'._$el$domref.static_vars.id,"class","'+className+'"]);\n';
 
+				    	if(attribs["view-model"]){
+				    		//console.log(attribs["view-model"]);
+				    		viewModel = attribs["view-model"];
+				    	}
+				    
 				    }else if(name === "script"){
 				    	//avoid script support
 				    }else if(name==="content"){				    	
@@ -374,17 +379,31 @@ module.exports = function(opt) {
 				modules_css_string = ',"'+modules_css_to_import.join('","')+'"';
 			}
 
-			buffer.unshift('define(["exports","incremental-dom","ferrugemjs","./'+fileName+'"'+modules_string+modules_css_string+'], function (exports,_idom,_libfjs_mod_,'+tmp_mod_name+modules_alias_string+') {\n');
+			buffer.unshift('define(["exports","incremental-dom","ferrugemjs","'+viewModel+'"'+modules_string+modules_css_string+'], function (exports,_idom,_libfjs_mod_,'+tmp_mod_name+modules_alias_string+') {\n');
 			
 			buffer.push('\n var _'+tmp_mod_name+'_tmp = Object.keys('+tmp_mod_name+')[0];');
 
-			buffer.push('\n'+tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype._$style_name$_ = "'+className+'";');
-			//buffer.push('\n'+tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype.content = _libfjs_mod_.GenericComponent.prototype.content;');
-			//buffer.push('\n'+tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype.refresh = _libfjs_mod_.GenericComponent.prototype.refresh;');
-			buffer.push('\n'+tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype.render = '+renderIDOMHTML+'}');
+			//buffer.push('\n'+tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype._$style_name$_ = "'+className+'";');
+			//buffer.push('\n'+tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype.render = '+renderIDOMHTML+'}');
+			//buffer.push('\n exports.default = '+tmp_mod_name+'[_'+tmp_mod_name+'_tmp];');
+
+			var subClazzName = '_clazz_sub_'+tmp_mod_name+'_tmp';
+			buffer.push(' exports.default = (function(super_clazz){');
+			buffer.push('\tfunction '+subClazzName+'(){');
+			buffer.push('\t\tsuper_clazz.call(this);');
+			buffer.push('\t}');
+			buffer.push('\t'+subClazzName+'.prototype = Object.create(super_clazz.prototype);');
+			buffer.push('\t'+subClazzName+'.prototype.constructor = '+subClazzName+';');
+			buffer.push('\t'+subClazzName+'.prototype._$style_name$_ = "'+className+'";');
+			buffer.push('\t'+subClazzName+'.prototype.render = '+renderIDOMHTML+'}');
+			buffer.push('\treturn '+subClazzName+';');
+			buffer.push(' })('+tmp_mod_name+'[_'+tmp_mod_name+'_tmp]);');
+			
 
 
-			buffer.push('\n exports.default = '+tmp_mod_name+'[_'+tmp_mod_name+'_tmp];');
+
+
+
 
 			buffer.push('\n});');
 
