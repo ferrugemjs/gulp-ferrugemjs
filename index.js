@@ -135,19 +135,32 @@ module.exports = function(opt) {
 					if(name==="template"){  	
 				    	renderIDOMHTML += 'function('+render_controller_alias+'){\n';				    	
 				    	className = fileName;
+
 				    	if(attribs.class){
+				    		className=fileName+' '+attribs.class;
+				    	}				    	
+
+				    	/*
+				    	if(attribs.class && (attribs["view-model"]||)){
+				    		className=fileName+' '+attribs.class;
+				    	}else if(attribs.class){
 				    		className=attribs.class;
 				    	};
+				    	*/
 				    	renderIDOMHTML += render_controller_alias+'._$style_name$_="'+className+'";\n';
 				    	//var uid = "uid_"+nextUID();
 				    	//renderIDOMHTML += '_idom.elementOpen("div","'+uid+'",["id","'+uid+'","class","'+className+'"]);\n';
 				    	//renderIDOMHTML += '_idom.elementOpen("div","'+uid+'",["id","'+uid+'","class","'+className+'"]);\n';
 				    	//renderIDOMHTML += '_idom.elementOpen("div",'+render_controller_alias+'._$el$domref.static_vars.id,["data-target",'+render_controller_alias+'._$el$domref.target,"id",'+render_controller_alias+'._$el$domref.static_vars.id,"class","'+className+'"]);\n';
-
-				    	if(attribs["view-model"]){
-				    		//console.log(attribs["view-model"]);
+				    	//console.log(1,attribs["view-model"]);
+				    	if(attribs["view-model"] && attribs["view-model"]!="false"){
+				    		//console.log(2,attribs["view-model"]);
 				    		viewModel = attribs["view-model"];
+				    	}else if(attribs["view-model"] && attribs["view-model"]=="false"){
+				    		//console.log(3,attribs["view-model"]);
+				    		viewModel = "";
 				    	}
+
 				    
 				    }else if(name === "script"){
 				    	//avoid script support
@@ -378,11 +391,18 @@ module.exports = function(opt) {
 			if(modules_css_to_import.length > 0){
 				modules_css_string = ',"'+modules_css_to_import.join('","')+'"';
 			}
-
-			buffer.unshift('define(["exports","incremental-dom","ferrugemjs","'+viewModel+'"'+modules_string+modules_css_string+'], function (exports,_idom,_libfjs_mod_,'+tmp_mod_name+modules_alias_string+') {\n');
+			var _tmp_constructor_no_view_ = '"_tmp_constructor_no_view_'+tmp_mod_name+'"';
+			if(viewModel){
+				buffer.unshift('define(["exports","incremental-dom","ferrugemjs","'+viewModel+'"'+modules_string+modules_css_string+'], function (exports,_idom,_libfjs_mod_,'+tmp_mod_name+modules_alias_string+') {');
+				buffer.push('\n var _'+tmp_mod_name+'_tmp = Object.keys('+tmp_mod_name+')[0];');
+			}else{
+				buffer.unshift('define(["exports","incremental-dom","ferrugemjs"'+modules_string+modules_css_string+'], function (exports,_idom,_libfjs_mod_'+modules_alias_string+') {');	
+				buffer.push('\n var _'+tmp_mod_name+'_tmp = '+_tmp_constructor_no_view_+';');
+			}
 			
-			buffer.push('\n var _'+tmp_mod_name+'_tmp = Object.keys('+tmp_mod_name+')[0];');
+			
 
+			
 			//buffer.push('\n'+tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype._$style_name$_ = "'+className+'";');
 			//buffer.push('\n'+tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype.render = '+renderIDOMHTML+'}');
 			//buffer.push('\n exports.default = '+tmp_mod_name+'[_'+tmp_mod_name+'_tmp];');
@@ -397,14 +417,13 @@ module.exports = function(opt) {
 			buffer.push('\t'+subClazzName+'.prototype._$style_name$_ = "'+className+'";');
 			buffer.push('\t'+subClazzName+'.prototype.render = '+renderIDOMHTML+'}');
 			buffer.push('\treturn '+subClazzName+';');
-			buffer.push(' })('+tmp_mod_name+'[_'+tmp_mod_name+'_tmp]);');
+			if(viewModel){
+				buffer.push(' })('+tmp_mod_name+'[_'+tmp_mod_name+'_tmp]);');
+			}else{
+				buffer.push(' })(function(){});');
+			}
 			
-
-
-
-
-
-
+			
 			buffer.push('\n});');
 
 			file.contents = new Buffer(buffer.join('\n'));
@@ -417,5 +436,3 @@ module.exports = function(opt) {
 		callback();
 	});
 };
-
-
