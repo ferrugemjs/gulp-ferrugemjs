@@ -153,10 +153,10 @@ module.exports = function(opt) {
 				    	//renderIDOMHTML += '_idom.elementOpen("div","'+uid+'",["id","'+uid+'","class","'+className+'"]);\n';
 				    	//renderIDOMHTML += '_idom.elementOpen("div",'+render_controller_alias+'._$el$domref.static_vars.id,["data-target",'+render_controller_alias+'._$el$domref.target,"id",'+render_controller_alias+'._$el$domref.static_vars.id,"class","'+className+'"]);\n';
 				    	//console.log(1,attribs["view-model"]);
-				    	if(attribs["view-model"] && attribs["view-model"]!="false"){
+				    	if(attribs["view-model"]){
 				    		//console.log(2,attribs["view-model"]);
 				    		viewModel = attribs["view-model"];
-				    	}else if(attribs["view-model"] && attribs["view-model"]=="false"){
+				    	}else if(attribs["no-view-model"]){
 				    		//console.log(3,attribs["view-model"]);
 				    		viewModel = "";
 				    	}
