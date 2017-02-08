@@ -126,7 +126,7 @@ module.exports = function(opt) {
 			var lastTag = "";
 			var renderIDOMHTML = "";
 			var mod_temp_inst = "";
-			var className = "";
+			var className = '""';
 			var index_array = "";
 			
 			var parser = new htmlparser.Parser({
@@ -134,34 +134,19 @@ module.exports = function(opt) {
 					lastTag = name;
 					if(name==="template"){  	
 				    	renderIDOMHTML += 'function('+render_controller_alias+'){\n';				    	
-				    	className = fileName;
+				    	className = '"'+fileName+'"';
 
 				    	if(attribs.class){
-				    		className=fileName+' '+attribs.class;
+				    		className = '"'+fileName+' " + '+appendContext(attrToContext(attribs.class))+' ';
 				    	}				    	
-
-				    	/*
-				    	if(attribs.class && (attribs["view-model"]||)){
-				    		className=fileName+' '+attribs.class;
-				    	}else if(attribs.class){
-				    		className=attribs.class;
-				    	};
-				    	*/
-				    	renderIDOMHTML += render_controller_alias+'._$style_name$_="'+className+'";\n';
-				    	//var uid = "uid_"+nextUID();
-				    	//renderIDOMHTML += '_idom.elementOpen("div","'+uid+'",["id","'+uid+'","class","'+className+'"]);\n';
-				    	//renderIDOMHTML += '_idom.elementOpen("div","'+uid+'",["id","'+uid+'","class","'+className+'"]);\n';
-				    	//renderIDOMHTML += '_idom.elementOpen("div",'+render_controller_alias+'._$el$domref.static_vars.id,["data-target",'+render_controller_alias+'._$el$domref.target,"id",'+render_controller_alias+'._$el$domref.static_vars.id,"class","'+className+'"]);\n';
-				    	//console.log(1,attribs["view-model"]);
+				    	renderIDOMHTML += render_controller_alias+'._$style_name$_='+className+';\n';
 				    	if(attribs["view-model"]){
 				    		//console.log(2,attribs["view-model"]);
 				    		viewModel = attribs["view-model"];
 				    	}else if(attribs["no-view-model"]){
 				    		//console.log(3,attribs["view-model"]);
 				    		viewModel = "";
-				    	}
-
-				    
+				    	}				    
 				    }else if(name === "script"){
 				    	//avoid script support
 				    }else if(name==="content"){				    	
@@ -247,12 +232,6 @@ module.exports = function(opt) {
 							key_with_array_index = key_with_array_index+'+"_"+('+index_array+')';
 						}
 
-						//console.log(key_uid,key_with_array_index,index_array);
-
-						//console.log(key_uid,mod_temp_inst);
-
-				    	//renderIDOMHTML += ' var '+mod_temp_inst+' = new '+tagname_constructor+'();\n';
-				    	
 				    	var separate_attrs = separateAttribs(attribs);
 				    	separate_attrs.static.is = name;
 				    	var _tmp_host_vars_ = attrToContext(separate_attrs.dinamic);
@@ -262,15 +241,7 @@ module.exports = function(opt) {
 				    	renderIDOMHTML += '_idom.elementOpen("'+tagname+'",'+key_with_array_index+','+'["is","'+tagname+'","id",'+key_with_array_index+']'+','+'null'+');\n';
 				    	renderIDOMHTML += '_idom.elementClose("'+tagname+'");\n';
 				    
-				    	//renderIDOMHTML += ' new '+tagname_constructor+'().refresh();\n';
-				    			//,hostVars:{}
-								//,staticVars:{}		
-								
-
 				    	renderIDOMHTML += ' var _$_inst_$_ = _libfjs_mod_.default.build({"classFactory":'+tagname_constructor+',"tagName":"'+tagname+'","target":'+key_with_array_index+',"hostVars":'+_tmp_host_vars_+',"staticVars":'+_tmp_static_vars+'});\n';
-				    		
-
-				    	//renderIDOMHTML += ' _libfjs_mod_.AuxClass.prototype.configComponent.call('+mod_temp_inst+',"'+tagname+'","'+mod_temp_inst+'",'+mod_tmp_attr_str+','+mod_tmp_static_attr_str+');\n';
 				    	renderIDOMHTML += ' _$_inst_$_.content(function(){ \n';						
 						
 				    }else if(name==="for"){
@@ -360,10 +331,6 @@ module.exports = function(opt) {
 				       renderIDOMHTML += ' });\n';
 				    }else if(tagname.indexOf("-") > -1 || tagname.indexOf(":") > -1){				    	
 				    	renderIDOMHTML += ' }).refresh();\n';
-
-				    	//renderIDOMHTML += '_idom.elementClose("'+tagname+'");\n';
-				    
-
 				    	mod_temp_inst = '';
 				    }else if(["if"].indexOf(tagname) > -1){
 				    	renderIDOMHTML += '\n\t};\n';
@@ -400,13 +367,6 @@ module.exports = function(opt) {
 				buffer.push('\n var _'+tmp_mod_name+'_tmp = '+_tmp_constructor_no_view_+';');
 			}
 			
-			
-
-			
-			//buffer.push('\n'+tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype._$style_name$_ = "'+className+'";');
-			//buffer.push('\n'+tmp_mod_name+'[_'+tmp_mod_name+'_tmp].prototype.render = '+renderIDOMHTML+'}');
-			//buffer.push('\n exports.default = '+tmp_mod_name+'[_'+tmp_mod_name+'_tmp];');
-
 			var subClazzName = '_clazz_sub_'+tmp_mod_name+'_tmp';
 			buffer.push(' exports.default = (function(super_clazz){');
 			buffer.push('\tfunction '+subClazzName+'(){');
@@ -414,15 +374,14 @@ module.exports = function(opt) {
 			buffer.push('\t}');
 			buffer.push('\t'+subClazzName+'.prototype = Object.create(super_clazz.prototype);');
 			buffer.push('\t'+subClazzName+'.prototype.constructor = '+subClazzName+';');
-			buffer.push('\t'+subClazzName+'.prototype._$style_name$_ = "'+className+'";');
+			//buffer.push('\t'+subClazzName+'.prototype._$style_name$_ = '+className+';');
 			buffer.push('\t'+subClazzName+'.prototype.render = '+renderIDOMHTML+'}');
 			buffer.push('\treturn '+subClazzName+';');
 			if(viewModel){
 				buffer.push(' })('+tmp_mod_name+'[_'+tmp_mod_name+'_tmp]);');
 			}else{
 				buffer.push(' })(function(){});');
-			}
-			
+			}		
 			
 			buffer.push('\n});');
 
