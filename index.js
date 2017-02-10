@@ -128,7 +128,9 @@ module.exports = function(opt) {
 			var mod_temp_inst = "";
 			var className = '""';
 			var index_array = "";
-			
+			var isNotFirstElement = true;
+			var firstElementAttrs = {};
+			var firstElementTag = "";
 			var parser = new htmlparser.Parser({
 				onopentag: function(name, attribs){
 					lastTag = name;
@@ -238,6 +240,11 @@ module.exports = function(opt) {
 				    	var _tmp_static_vars = JSON.stringify(separate_attrs.static);
 				    	//console.log(mod_tmp_attr_str,'#',mod_tmp_static_attr_str);
 
+				    	//_$atrrs$_
+
+				    	renderIDOMHTML += 'console.log(new '+tagname_constructor+'()._$atrrs$_);\n';
+				    	
+
 				    	renderIDOMHTML += '_idom.elementOpen("'+tagname+'",'+key_with_array_index+','+'["is","'+tagname+'","id",'+key_with_array_index+']'+','+'null'+');\n';
 				    	renderIDOMHTML += '_idom.elementClose("'+tagname+'");\n';
 				    
@@ -301,7 +308,23 @@ module.exports = function(opt) {
 						var static_key = (attribs.id)?'"'+attribs.id+'"':'null';
 						
 						//console.log(static_key);
-				    	renderIDOMHTML += '_idom.elementOpen("'+name+'",'+static_key+','+mod_tmp_static_attr_str+','+mod_tmp_attr_str+');\n';
+				    	//renderIDOMHTML += '_idom.elementOpen("'+name+'",'+static_key+','+mod_tmp_static_attr_str+','+mod_tmp_attr_str+');\n';
+				    
+						//console.log('isNotFirst',isNotFirstElement,arguments);
+				    	if(isNotFirstElement){
+				    		firstElementTag = name;
+				    		isNotFirstElement = false;
+				    		firstElementAttrs = {
+				    				name:name
+				    				,key:static_key
+				    				,staticAttrs:mod_tmp_static_attr_str
+				    				,dinAttrs:mod_tmp_attr_str
+				    			};
+				    		//firstElementRender = '_idom.elementOpen("'+name+'",'+static_key+','+mod_tmp_static_attr_str+','+mod_tmp_attr_str+');\n';
+				    	}else{
+				    		renderIDOMHTML += '_idom.elementOpen("'+name+'",'+static_key+','+mod_tmp_static_attr_str+','+mod_tmp_attr_str+');\n';
+				    	}
+
 				    }
 				},
 				ontext: function(text){
@@ -338,7 +361,13 @@ module.exports = function(opt) {
 				    	renderIDOMHTML += '\n\t});\n';
 				    	index_array = "";
 				    }else if(["require","style","compose","else","elseif"].indexOf(tagname) < 0){
-				    	renderIDOMHTML += '_idom.elementClose("'+tagname+'");\n';
+				    	//console.log("is not last!",isNotLastElement,arguments);
+				    	//if(isNotLastElement){
+				    		//isNotLastElement = false;
+						//}else{
+							renderIDOMHTML += '_idom.elementClose("'+tagname+'");\n';
+						//}
+
 				    }
 				}
 			}, {decodeEntities: true});
@@ -374,8 +403,14 @@ module.exports = function(opt) {
 			buffer.push('\t}');
 			buffer.push('\t'+subClazzName+'.prototype = Object.create(super_clazz.prototype);');
 			buffer.push('\t'+subClazzName+'.prototype.constructor = '+subClazzName+';');
+			
+			buffer.push('\t'+subClazzName+'.prototype._$atrrs$_ = '+JSON.stringify(firstElementAttrs)+';');
+
+			//firstElementAttrs
+
 			//buffer.push('\t'+subClazzName+'.prototype._$style_name$_ = '+className+';');
-			buffer.push('\t'+subClazzName+'.prototype.render = '+renderIDOMHTML+'}');
+			//console.log(renderIDOMHTML.replace(new RegExp('_idom\\.elementClose\\("'+firstElementTag+'"\\);$','gm'),''));
+			buffer.push('\t'+subClazzName+'.prototype.render = '+renderIDOMHTML.replace(new RegExp('_idom\\.elementClose\\("'+firstElementTag+'"\\);$','gm'),'')+'}');
 			buffer.push('\treturn '+subClazzName+';');
 			if(viewModel){
 				buffer.push(' })('+tmp_mod_name+'[_'+tmp_mod_name+'_tmp]);');
