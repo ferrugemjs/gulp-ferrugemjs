@@ -137,11 +137,12 @@ module.exports = function(opt) {
 					if(name==="template"){  	
 				    	renderIDOMHTML += 'function('+render_controller_alias+'){\n';				    	
 				    	className = '"'+fileName+'"';
-
+				    	/*
 				    	if(attribs.class){
 				    		className = '"'+fileName+' " + '+appendContext(attrToContext(attribs.class))+' ';
-				    	}				    	
-				    	renderIDOMHTML += render_controller_alias+'._$style_name$_='+className+';\n';
+				    	}	
+				    	*/			    	
+				    	//renderIDOMHTML += render_controller_alias+'._$style_name$_='+className+';\n';
 				    	if(attribs["view-model"]){
 				    		//console.log(2,attribs["view-model"]);
 				    		viewModel = attribs["view-model"];
@@ -233,22 +234,15 @@ module.exports = function(opt) {
 						if((!attribs["key:id"]) && index_array){							
 							key_with_array_index = key_with_array_index+'+"_"+('+index_array+')';
 						}
+						attribs["key:id"] = key_with_array_index;
+						//console.log(key_with_array_index);
 
 				    	var separate_attrs = separateAttribs(attribs);
 				    	separate_attrs.static.is = name;
 				    	var _tmp_host_vars_ = attrToContext(separate_attrs.dinamic);
 				    	var _tmp_static_vars = JSON.stringify(separate_attrs.static);
-				    	//console.log(mod_tmp_attr_str,'#',mod_tmp_static_attr_str);
-
-				    	//_$atrrs$_
-
-				    	renderIDOMHTML += 'console.log(new '+tagname_constructor+'()._$atrrs$_);\n';
 				    	
-
-				    	renderIDOMHTML += '_idom.elementOpen("'+tagname+'",'+key_with_array_index+','+'["is","'+tagname+'","id",'+key_with_array_index+']'+','+'null'+');\n';
-				    	renderIDOMHTML += '_idom.elementClose("'+tagname+'");\n';
-				    
-				    	renderIDOMHTML += ' var _$_inst_$_ = _libfjs_mod_.default.build({"classFactory":'+tagname_constructor+',"tagName":"'+tagname+'","target":'+key_with_array_index+',"hostVars":'+_tmp_host_vars_+',"staticVars":'+_tmp_static_vars+'});\n';
+				    	renderIDOMHTML += ' var _$_inst_$_ = _libfjs_mod_.default.build({"classFactory":'+tagname_constructor+',"tagName":"'+tagname+'","target":"","hostVars":'+_tmp_host_vars_+',"staticVars":'+_tmp_static_vars+'});\n';
 				    	renderIDOMHTML += ' _$_inst_$_.content(function(){ \n';						
 						
 				    }else if(name==="for"){
@@ -312,13 +306,17 @@ module.exports = function(opt) {
 				    
 						//console.log('isNotFirst',isNotFirstElement,arguments);
 				    	if(isNotFirstElement){
+				    		//obj_array_static.push("is");
+				    		//obj_array_static.push(name);
 				    		firstElementTag = name;
 				    		isNotFirstElement = false;
 				    		firstElementAttrs = {
 				    				name:name
-				    				,key:static_key
-				    				,staticAttrs:mod_tmp_static_attr_str
-				    				,dinAttrs:mod_tmp_attr_str
+				    				//,key:static_key
+				    				,attribs:{
+				    					static:obj_array_static
+				    					,dinamic:mod_tmp_attr_str
+				    				}
 				    			};
 				    		//firstElementRender = '_idom.elementOpen("'+name+'",'+static_key+','+mod_tmp_static_attr_str+','+mod_tmp_attr_str+');\n';
 				    	}else{
@@ -353,7 +351,9 @@ module.exports = function(opt) {
 				    }else if(tagname === "compose"){
 				       renderIDOMHTML += ' });\n';
 				    }else if(tagname.indexOf("-") > -1 || tagname.indexOf(":") > -1){				    	
-				    	renderIDOMHTML += ' }).refresh();\n';
+				    	//renderIDOMHTML += ' }).refresh(true);\n';
+				    	renderIDOMHTML += ' });\n';
+				    	renderIDOMHTML += ' _libfjs_mod_.default.reDraw.call(_$_inst_$_);\n';
 				    	mod_temp_inst = '';
 				    }else if(["if"].indexOf(tagname) > -1){
 				    	renderIDOMHTML += '\n\t};\n';
@@ -361,13 +361,7 @@ module.exports = function(opt) {
 				    	renderIDOMHTML += '\n\t});\n';
 				    	index_array = "";
 				    }else if(["require","style","compose","else","elseif"].indexOf(tagname) < 0){
-				    	//console.log("is not last!",isNotLastElement,arguments);
-				    	//if(isNotLastElement){
-				    		//isNotLastElement = false;
-						//}else{
-							renderIDOMHTML += '_idom.elementClose("'+tagname+'");\n';
-						//}
-
+						renderIDOMHTML += '_idom.elementClose("'+tagname+'");\n';
 				    }
 				}
 			}, {decodeEntities: true});
@@ -410,7 +404,9 @@ module.exports = function(opt) {
 
 			//buffer.push('\t'+subClazzName+'.prototype._$style_name$_ = '+className+';');
 			//console.log(renderIDOMHTML.replace(new RegExp('_idom\\.elementClose\\("'+firstElementTag+'"\\);$','gm'),''));
-			buffer.push('\t'+subClazzName+'.prototype.render = '+renderIDOMHTML.replace(new RegExp('_idom\\.elementClose\\("'+firstElementTag+'"\\);$','gm'),'')+'}');
+			//buffer.push('\t'+subClazzName+'.prototype.render = '+renderIDOMHTML.replace(new RegExp('_idom\\.elementClose\\("'+firstElementTag+'"\\);$','gm'),'')+'}');
+			buffer.push('\t'+subClazzName+'.prototype.render = '+renderIDOMHTML.substring(0,renderIDOMHTML.lastIndexOf('_idom.elementClose("'+firstElementTag+'");'))+'}');
+			
 			buffer.push('\treturn '+subClazzName+';');
 			if(viewModel){
 				buffer.push(' })('+tmp_mod_name+'[_'+tmp_mod_name+'_tmp]);');
