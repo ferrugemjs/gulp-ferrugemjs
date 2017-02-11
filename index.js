@@ -219,26 +219,22 @@ module.exports = function(opt) {
 							tagname_constructor = '_'+tagname_with_namespace+'.default';							
 						}					
 	
-						//console.log(namespace,"#",tagname,"#",tagname_underscore,"#",tagname_with_namespace,"#",tagname_constructor);
 						var key_uid = 'tmp_inst_'+tagname_underscore+nextUID();//+'_'+index_array;						
-						
 						if(attribs["key:id"]){
 							key_uid = attribs["key:id"];
 						}
-
+						
 						mod_temp_inst = appendContext(attrToContext(key_uid));
 
-						var key_with_array_index = mod_temp_inst;
-
-
 						if((!attribs["key:id"]) && index_array){							
-							key_with_array_index = key_with_array_index+'+"_"+('+index_array+')';
-						}
-						attribs["key:id"] = key_with_array_index;
-						//console.log(key_with_array_index);
-
+							attribs["key:id"] = "${'"+mod_temp_inst.replace(/"/g,"")+"'+"+(index_array)+"}";
+							
+						}else if(!attribs["key:id"]){
+							attribs["key:id"] = "${'"+mod_temp_inst.replace(/"/g,"")+"'}";
+						}					
+						
 				    	var separate_attrs = separateAttribs(attribs);
-				    	separate_attrs.static.is = name;
+				       	separate_attrs.static.is = name;
 				    	var _tmp_host_vars_ = attrToContext(separate_attrs.dinamic);
 				    	var _tmp_static_vars = JSON.stringify(separate_attrs.static);
 				    	
