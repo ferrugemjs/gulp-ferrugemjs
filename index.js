@@ -238,7 +238,7 @@ module.exports = function(opt) {
 				    	var _tmp_host_vars_ = attrToContext(separate_attrs.dinamic);
 				    	var _tmp_static_vars = JSON.stringify(separate_attrs.static);
 				    	
-				    	renderIDOMHTML += ' var _$_inst_$_ = _libfjs_mod_.default.build({"classFactory":'+tagname_constructor+',"tagName":"'+tagname+'","target":"","hostVars":'+_tmp_host_vars_+',"staticVars":'+_tmp_static_vars+'});\n';
+				    	renderIDOMHTML += ' var _$_inst_$_ = _libfjs_mod_.default.build({"classFactory":'+tagname_constructor+',"tag":"div","alias":"'+name+'","target":"","hostVars":'+_tmp_host_vars_+',"staticVars":'+_tmp_static_vars+'});\n';
 				    	renderIDOMHTML += ' _$_inst_$_.content(function(){ \n';						
 						
 				    }else if(name==="for"){
@@ -309,10 +309,8 @@ module.exports = function(opt) {
 				    		firstElementAttrs = {
 				    				name:name
 				    				//,key:static_key
-				    				,attribs:{
-				    					static:obj_array_static
-				    					,dinamic:mod_tmp_attr_str
-				    				}
+				    				,static:obj_array_static
+				    				,dinamic:mod_tmp_attr_str
 				    			};
 				    		//firstElementRender = '_idom.elementOpen("'+name+'",'+static_key+','+mod_tmp_static_attr_str+','+mod_tmp_attr_str+');\n';
 				    	}else{
@@ -394,7 +392,7 @@ module.exports = function(opt) {
 			buffer.push('\t'+subClazzName+'.prototype = Object.create(super_clazz.prototype);');
 			buffer.push('\t'+subClazzName+'.prototype.constructor = '+subClazzName+';');
 			
-			buffer.push('\t'+subClazzName+'.prototype._$atrrs$_ = '+JSON.stringify(firstElementAttrs)+';');
+			buffer.push('\t'+subClazzName+'.prototype._$attrs$_ = '+JSON.stringify(firstElementAttrs)+';');
 
 			//firstElementAttrs
 
