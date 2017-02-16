@@ -197,7 +197,14 @@ module.exports = function(opt) {
 				    
 
 				    }else if(name.indexOf(":") > -1 || name.indexOf("-") > -1){
+				    	//is a custom tag
 
+
+				    	if(attribs["if"]){
+				    		renderIDOMHTML += 'if('+appendContext(attribs["if"])+')';
+				    		delete attribs["if"];
+				    	}
+				    	
 						var namespace = "";
 						var tagname = "";
 						var tagname_underscore = "";
@@ -238,7 +245,7 @@ module.exports = function(opt) {
 				    	var _tmp_host_vars_ = attrToContext(separate_attrs.dinamic);
 				    	var _tmp_static_vars = JSON.stringify(separate_attrs.static);
 				    	
-				    	renderIDOMHTML += ' var _$_inst_$_ = _libfjs_mod_.default.build({"classFactory":'+tagname_constructor+',"tag":"div","alias":"'+name+'","target":"","hostVars":'+_tmp_host_vars_+',"staticVars":'+_tmp_static_vars+'});\n';
+				    	renderIDOMHTML += '(function(){\n var _$_inst_$_ = _libfjs_mod_.default.build({"classFactory":'+tagname_constructor+',"tag":"div","alias":"'+name+'","target":"","hostVars":'+_tmp_host_vars_+',"staticVars":'+_tmp_static_vars+'});\n';
 				    	renderIDOMHTML += ' _$_inst_$_.content(function(){ \n';						
 						
 				    }else if(name==="for"){
@@ -259,6 +266,13 @@ module.exports = function(opt) {
 				    	renderIDOMHTML += '\t}else{\n';
 				    }else{
 				    	//is a normal tag
+
+				    	if(attribs["if"]){
+				    		renderIDOMHTML += 'if('+appendContext(attribs["if"])+')';
+				    		delete attribs["if"];
+				    	}
+
+
 						var obj_array = [];		
 						var bindField = "";	
 						var obj_array_static = [];			
@@ -313,7 +327,9 @@ module.exports = function(opt) {
 				    				,dinamic:mod_tmp_attr_str
 				    			};
 				    		//firstElementRender = '_idom.elementOpen("'+name+'",'+static_key+','+mod_tmp_static_attr_str+','+mod_tmp_attr_str+');\n';
-				    	}else{
+				    	}else{				    		
+
+				    		renderIDOMHTML += '(function(){ \n';				    		
 				    		renderIDOMHTML += '_idom.elementOpen("'+name+'",'+static_key+','+mod_tmp_static_attr_str+','+mod_tmp_attr_str+');\n';
 				    	}
 
@@ -324,7 +340,7 @@ module.exports = function(opt) {
 						if(lastTag==="style"){
 							appendBuffer("var tmp_style = document.createElement('style');");
 							appendBuffer("tmp_style.type = 'text/css';");
-							appendBuffer("tmp_style.innerHTML = '"+text.replace(/\n/g,'')+"';");
+							appendBuffer("tmp_style.innerHTML = '"+text.replace(/'/g,'"').replace(/\n/g,'')+"';");
 							appendBuffer("document.getElementsByTagName('head')[0].appendChild(tmp_style);");
 						}else if(lastTag.indexOf("-") > -1 || ["template","if","for","require","style"].indexOf(lastTag) < 0){
 							renderIDOMHTML += '_idom.text("'+text.trim().replace(/\$\{([^}]*)\}/g,function($1,$2){
@@ -336,6 +352,7 @@ module.exports = function(opt) {
 				    lastTag = "";
 				},
 				onclosetag: function(tagname){
+
 					if(tagname === "template"){
 						//renderIDOMHTML += '_idom.elementClose("div");\n';
 					}else if(tagname === "content"){
@@ -345,9 +362,10 @@ module.exports = function(opt) {
 				    }else if(tagname === "compose"){
 				       renderIDOMHTML += ' });\n';
 				    }else if(tagname.indexOf("-") > -1 || tagname.indexOf(":") > -1){				    	
-				    	//renderIDOMHTML += ' }).refresh(true);\n';
-				    	renderIDOMHTML += ' });\n';
+				    	//custom tags		
+				    	renderIDOMHTML += ' });\n';	    	
 				    	renderIDOMHTML += ' _libfjs_mod_.default.reDraw.call(_$_inst_$_);\n';
+				    	renderIDOMHTML += ' })();\n';
 				    	mod_temp_inst = '';
 				    }else if(["if"].indexOf(tagname) > -1){
 				    	renderIDOMHTML += '\n\t};\n';
@@ -355,10 +373,13 @@ module.exports = function(opt) {
 				    	renderIDOMHTML += '\n\t});\n';
 				    	index_array = "";
 				    }else if(["require","style","compose","else","elseif"].indexOf(tagname) < 0){
-						renderIDOMHTML += '_idom.elementClose("'+tagname+'");\n';
+						//normal tags
+						//console.log(this.onclosetag)
+						renderIDOMHTML += '_idom.elementClose("'+tagname+'"); \n';
+						renderIDOMHTML += ' })();\n';
 				    }
 				}
-			}, {decodeEntities: true});
+			}, {decodeEntities: true,recognizeSelfClosing:true});
 			parser.write(decoder.write(templateFile).replace(/[\n\t\r]/g," "));
 			parser.end();
 
