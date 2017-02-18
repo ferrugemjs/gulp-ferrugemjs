@@ -4,7 +4,8 @@
   "description": "plugin GULP to convert html template to Incremental DOM",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "w:test": "nodemon -w test/ -w parse/ test/test.js"
   },
   "repository": {
     "type": "git",
@@ -28,10 +29,14 @@
     "url": "https://github.com/ferrugemjs/gulp-ferrugemjs/issues"
   },
   "homepage": "https://github.com/ferrugemjs/gulp-ferrugemjs#readme",
+  "devDependencies": {
+    "nodemon": "^1.11.0"
+  },
   "dependencies": {
-    "gulp": "^3.9.1",
+	"gulp": "^3.9.1",
+    "js-beautify": "^1.6.9",
+    "domhandler": "^2.3.0",
     "htmlparser2": "^3.9.2",
     "through-gulp": "^0.5.0"
-  },
-  "devDependencies": {}
+  }
 }
