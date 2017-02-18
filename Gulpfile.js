@@ -4,9 +4,9 @@ var ferrugemjs = require('./index');
 
 gulp.task('template',function(){
     return gulp.src([
-        "./src/**/*.html"
+        "./test/*.html"
     ])
-    .pipe(ferrugemjs({mode:"amd"}))
+    .pipe(ferrugemjs({formatCode:true}))
     .pipe(rename({
         extname: ".html.js"
     }))

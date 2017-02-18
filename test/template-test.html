@@ -16,12 +16,12 @@
 	<div 
 		class="sein viu my frient" 
 		title="okboy" 
-		alt="\${this.test}" 
+		alt="${this.test}" 
 		click.trigger="this.test" 
 	>
 		<custom-tag 
 		myattr1="this.ops"
-		myattr2="\${this.title}"
+		myattr2="${this.title}"
 		on-first-loader.once="this.test"
 		></custom-tag>
 		<label if="1==2">texto condicional</label>
@@ -30,20 +30,20 @@
 		    id="gread1"
 			alt="ops"
 			title="lololo"
-			tooltip="\${this.title}"
+			tooltip="${this.title}"
 			click.trigger="this.test" 
 		>Test with common dom element</span>
 		<span key:id="hummm">
-		 <p key:id="\${this.test}"></p>
+		 <p key:id="${this.test}"></p>
 		</span>
 		<compose 
 			view:from="./newview/statck-plz"
 		></compose>
 		<compose
-			quenada="\${this.opse}" 
+			quenada="${this.opse}" 
 			id="dinamiccompose1" 
-			other-dinamic="\${this.title}"
-			view:from="\${this.myview}"
+			other-dinamic="${this.title}"
+			view:from="${this.myview}"
 		>
 		</compose>
 		<ul>
@@ -53,5 +53,6 @@
 		<ui-template>
 			<ui-test>Um lixo</ui-test>
 		</ui-template>
+		<input class="simple" type="text" placeholder="...new name" keyup.bind="this.name"></input>
 	</div>
 </template>

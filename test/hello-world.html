@@ -1,0 +1,20 @@
+<template>
+	<require from="../commons/assets/commons-style.css!"></require>
+	<div class="example-basic-box">
+		<h3 class="title">Hello World</h3>
+		<div class="example-basic-box-body">
+			<p>
+				<span>Hello World, ${this.name} !</span>
+			</p>
+			<p>
+			   <input class="simple" type="text" placeholder="...new name" keyup.bind="this.name"></input>
+			</p>
+		</div>	
+		<div class="list-concepts">
+			<span>Concepts</span>
+			<span>&#10004; one way data binding. </span>
+			<span>&#10004; event binding. </span>
+			<span>&#10004; import a css file. </span>
+		</div>
+	</div>
+</template>

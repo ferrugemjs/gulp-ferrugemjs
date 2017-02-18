@@ -119,22 +119,32 @@ function objStaticAttrToStr(attribs){
 
 }
 
-function objDinamicAttrToStr(attribs){
+function objDinamicAttrToStr(attribs,tagName){
 	var obj_array = [];		
 	var bindField = "";			
 	for(var key in attribs){
 		var indxBind = 	key.indexOf(".bind");
-		if(indxBind > -1 && (name==="input" || name==="textarea" || name==="select")){
+		if(indxBind > -1 && (tagName=="input" || tagName=="textarea" || tagName=="select")){
 			var evtstr = "on"+key.substring(0,indxBind);
 			obj_array.push(evtstr);
-			if(name==="select"){									
+			if(tagName=="select"){									
 				obj_array.push('#{#function($evt){\nvar tmp_$target$_evt=$evt.target;\n'+contextToAlias(attribs[key])+'=tmp_$target$_evt.options[tmp_$target$_evt.selectedIndex].value;\n'+context_alias+'.refresh();\n}#}#');
 			}else{									
 				obj_array.push('#{#function($evt){\n'+contextToAlias(attribs[key])+'=$evt.target.value;\n'+context_alias+'.refresh()\n}\n#}#');
-			}								
+			}
+			console.log(attribs[key])								
 		}else if(key.indexOf(".") > 0){
-			obj_array.push('on'+key.substring(0,key.indexOf("."))+'');
-			obj_array.push(attribs[key]);						
+			
+			//talvez certo?
+			//obj_array.push('on'+key.substring(0,key.indexOf("."))+'');
+			//obj_array.push(attribs[key]);	
+
+
+			var eventStripped =	adjustEvents('on'+key.substring(0,key.indexOf("."))+'',attribs[key]);
+			obj_array.push(eventStripped.key);
+			obj_array.push(eventStripped.value);
+
+			//console.log(`aqui hoooo--->`,attribs[key])					
 		}else{								
 			if(typeof attribs[key] === "string" && attribs[key].indexOf("${") === 0){
 				obj_array.push(''+key+'');
@@ -305,7 +315,7 @@ function tagBasicToStr(comp){
 
 
 	var mod_tmp_static_attr_str=objStaticAttrToStr(separateAttrsElement.static);
-	var mod_tmp_attr_str = objDinamicAttrToStr(separateAttrsElement.dinamic);
+	var mod_tmp_attr_str = objDinamicAttrToStr(separateAttrsElement.dinamic,comp.name);
 	
 	var basicTag = '\t_idom.elementOpen("'+comp.name+'",'+static_key+','+mod_tmp_static_attr_str+','+mod_tmp_attr_str+');';
 	if(comp.children){
@@ -341,13 +351,23 @@ function tagTemplateToStr(comp){
  	var	firstElementAttrs = {name:'div'};
 
     if(firstElementArray.length){
-    	//console.log('its ok');
+
     	var separateAttrsFirstElement = separateAttribs(firstElementArray[0].attribs)
+      
+         var flat_static_array = [];
+    	for(key in separateAttrsFirstElement.static){
+    		//console.log(`aqui oooo::: ${key}`)
+    		flat_static_array.push(key,separateAttrsFirstElement.static[key])
+    	} 
+    	//console.log('its ok');	
+
       	firstElementAttrs = {
 			name:firstElementArray[0].name
 			//,key:static_key
-			,static:objStaticAttrToStr(separateAttrsFirstElement.static)
-			,dinamic:objDinamicAttrToStr(separateAttrsFirstElement.dinamic)
+			//,static: separateAttrsFirstElement.static.map((item)=>re) 
+			,static:flat_static_array 
+			// ,static:objStaticAttrToStr(separateAttrsFirstElement.static)
+			,dinamic:objDinamicAttrToStr(separateAttrsFirstElement.dinamic,firstElementArray[0].name)
 		};
 
     }else{

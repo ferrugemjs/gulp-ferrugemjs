@@ -60,6 +60,7 @@ var rawHtml
 		<ui-template>
 			<ui-test>Um lixo</ui-test>
 		</ui-template>
+		<input class="simple" type="text" placeholder="...new name" keyup.bind="this.name"></input>
 	</div>
 </template>`;
 

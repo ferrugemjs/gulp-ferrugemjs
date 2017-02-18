@@ -16,10 +16,11 @@ module.exports = function(opt) {
 			fileName = fileName.substring(0,fileName.length-5);
 			var viewModel = './'+fileName;
 			
-			var rawHtml = new Buffer(decoder.write(file.contents));
+			var templateFile = new Buffer(decoder.write(file.contents));
+			//var rawHtml = new Buffer(decoder.write(file.contents));
 			
 			file.contents = new Buffer(
-				fjsparse(rawHtml,{formatCode:(opt?opt.formatCode:false)})
+				fjsparse(decoder.write(templateFile),{formatCode:(opt?opt.formatCode:false)})
 			);
 		}
 		if (file.isStream()){}
