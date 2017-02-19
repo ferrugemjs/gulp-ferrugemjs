@@ -12,7 +12,7 @@
     "url": "git+https://github.com/ferrugemjs/gulp-ferrugemjs.git"
   },
   "files": [
-    "index.js"
+    "index.js","parse/parse.js"
   ],
   "keywords": [
     "gulp",
