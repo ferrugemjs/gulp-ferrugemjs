@@ -88,10 +88,11 @@ function separateAttribs(attribs){
 	var dinamic_attr = {};
 	for (var key in attribs) {
 		if(key.indexOf(".") > 0){	
-			//is a custom event			    			
-			//dinamic_attr[key] = "${"+appendContext(attribs[key])+"}";
-			var eventStripped =	adjustEvents(key,attribs[key]);
-			dinamic_attr[key] = eventStripped.value;
+			//is a custom event		
+			dinamic_attr[key] =  contextToAlias(attribs[key]);	    			
+			 //dinamic_attr[key] = "${"+contextToAlias(attribs[key])+"}";
+			//var eventStripped =	adjustEvents(key,attribs[key]);
+			//dinamic_attr[key] = eventStripped.value;
 												    			
 		}else{				    			
 			if(attribs[key].indexOf("${") === 0){
@@ -129,10 +130,11 @@ function objDinamicAttrToStr(attribs,tagName){
 			obj_array.push(evtstr);
 			if(tagName=="select"){									
 				obj_array.push('#{#function($evt){\nvar tmp_$target$_evt=$evt.target;\n'+contextToAlias(attribs[key])+'=tmp_$target$_evt.options[tmp_$target$_evt.selectedIndex].value;\n'+context_alias+'.refresh();\n}#}#');
-			}else{									
-				obj_array.push('#{#function($evt){\n'+contextToAlias(attribs[key])+'=$evt.target.value;\n'+context_alias+'.refresh()\n}\n#}#');
+			}else{		
+				//console.log( attribs[key]);							
+				obj_array.push('#{#function($evt){\n'+( attribs[key])+'=$evt.target.value;\n'+context_alias+'.refresh()\n}\n#}#');
 			}
-			console.log(attribs[key])								
+			//console.log(attribs[key])								
 		}else if(key.indexOf(".") > 0){
 			
 			//talvez certo?
@@ -346,27 +348,20 @@ function tagTemplateToStr(comp){
 	var firstElementArray = comp
 						   .children
 						   .filter(sub_comp => sub_comp.type=='tag' && ['require','style','script','command'].indexOf(sub_comp.name) < 0)
-						   //.filter(sub_comp => sub_comp.type=='tag' && ['require','style','script','command'].indexOf(sub_comp.name) < -1 )
 
  	var	firstElementAttrs = {name:'div'};
 
     if(firstElementArray.length){
 
     	var separateAttrsFirstElement = separateAttribs(firstElementArray[0].attribs)
-      
-         var flat_static_array = [];
-    	for(key in separateAttrsFirstElement.static){
-    		//console.log(`aqui oooo::: ${key}`)
+        var flat_static_array = [];
+    	for(key in separateAttrsFirstElement.static){    		
     		flat_static_array.push(key,separateAttrsFirstElement.static[key])
     	} 
-    	//console.log('its ok');	
 
       	firstElementAttrs = {
 			name:firstElementArray[0].name
-			//,key:static_key
-			//,static: separateAttrsFirstElement.static.map((item)=>re) 
 			,static:flat_static_array 
-			// ,static:objStaticAttrToStr(separateAttrsFirstElement.static)
 			,dinamic:objDinamicAttrToStr(separateAttrsFirstElement.dinamic,firstElementArray[0].name)
 		};
 
@@ -374,9 +369,7 @@ function tagTemplateToStr(comp){
     	console.warn('warn: you need a root element into a "template" element!')
     }						   
 
-    //console.log(firstElementAttrs);
-
-	comp
+    comp
 		.children
 		.filter(sub_comp => sub_comp.type=='tag' && sub_comp.name == 'require' && sub_comp.attribs["from"])
 		.forEach(sub_comp => requiresComp.push(resolveTagRequire(sub_comp)));
