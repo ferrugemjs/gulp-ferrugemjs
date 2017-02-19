@@ -129,7 +129,7 @@ function objDinamicAttrToStr(attribs,tagName){
 			var evtstr = "on"+key.substring(0,indxBind);
 			obj_array.push(evtstr);
 			if(tagName=="select"){									
-				obj_array.push('#{#function($evt){\nvar tmp_$target$_evt=$evt.target;\n'+contextToAlias(attribs[key])+'=tmp_$target$_evt.options[tmp_$target$_evt.selectedIndex].value;\n'+context_alias+'.refresh();\n}#}#');
+				obj_array.push('#{#function($evt){\nvar tmp_$target$_evt=$evt.target;\n'+(attribs[key])+'=tmp_$target$_evt.options[tmp_$target$_evt.selectedIndex].value;\n'+context_alias+'.refresh();\n}#}#');
 			}else{		
 				//console.log( attribs[key]);							
 				obj_array.push('#{#function($evt){\n'+( attribs[key])+'=$evt.target.value;\n'+context_alias+'.refresh()\n}\n#}#');
@@ -206,11 +206,19 @@ function tagTextToStr(comp){
 function tagCustomToStr(comp){
 
 	//provendo um key caso nao exista, mas nao eh funcional em caso de foreach
-	var static_key = '"tmp_key_inst_custom_comp'+nextUID()+'"';
+	var static_key = 'tmp_key_inst_custom_comp'+nextUID();
+	
+	/*
 	if(comp.attribs && comp.attribs["key:id"]){
 		static_key =  '"'+encodeAndSetContext(comp.attribs["key:id"])+'"';
 		delete comp.attribs["key:id"];
 	}
+	*/
+
+	if(!comp.attribs["key:id"]){
+		comp.attribs["key:id"]=static_key;
+	}
+
 	//comp.attribs["is"] = "compose-view";
 
 	var namespace = "";
@@ -238,6 +246,15 @@ function tagCustomToStr(comp){
 	var separate_attrs = separateAttribs(comp.attribs);
    	separate_attrs.static.is = comp.name;
 	//var _tmp_host_vars_ = objDinamicAttrToStr(separate_attrs.dinamic);
+	
+	//($_this_$.mark.bind($_this_$))
+	for(key in separate_attrs.dinamic){
+		if(key.indexOf(".") > 0){
+			//console.log(adjustEvents(key,separate_attrs.dinamic[key]));
+			separate_attrs.dinamic[key] = adjustEvents(key,separate_attrs.dinamic[key]).value;
+		}
+	}
+
 	var  _tmp_host_vars_ = attrToContext(separate_attrs.dinamic);
 	var _tmp_static_vars = JSON.stringify(separate_attrs.static);
 	
@@ -327,158 +344,143 @@ function tagBasicToStr(comp){
 	return basicTag;
 }
 
-function tagTemplateToStr(comp){
-
-	var viewModel = "";
+function tagTemplateToStr(comp,viewModel){
+	//console.log(comp.type,comp.name,viewModel);
 	var stylesStr = "";
-	var templatePre = "";
-	var tmp_mod_name = "_mod_$_"+nextUID();
+	var templatePre = "";	
 	var requiresComp = [];
-	
+	var viewModelAlias = "";
+
 	if(comp.attribs && comp.attribs["no-view-model"]){
 		viewModel = "";
 	}else if(comp.attribs && comp.attribs["view-model"]){
 		viewModel = comp.attribs["view-model"];
-
-		requiresComp.push({type: 'controller', path: viewModel, alias: pathToAlias(viewModel).url});
+		viewModelAlias = '_'+pathToAlias(viewModel).alias.replace(/-/g,"_");
+		requiresComp.push({type: 'controller', path: viewModel, alias:viewModelAlias });
+	}else{
+		//console.log(pathToAlias('./'+viewModel));
+		viewModel = './'+viewModel;
+		viewModelAlias = '_'+pathToAlias(viewModel).alias.replace(/-/g,"_");
+		requiresComp.push({type: 'controller', path:viewModel, alias: viewModelAlias});
 	}
+	var tmp_mod_name = "_mod_"+viewModelAlias+"_"+nextUID();
 
 	var _tmp_constructor_no_view_ = '"_tmp_constructor_no_view_'+tmp_mod_name+'"';
 
-	var firstElementArray = comp
-						   .children
-						   .filter(sub_comp => sub_comp.type=='tag' && ['require','style','script','command'].indexOf(sub_comp.name) < 0)
+	if(comp.children && comp.children.length){
+		var firstElementArray = comp
+							   .children
+							   .filter(sub_comp => sub_comp.type=='tag' && ['require','style','script','command'].indexOf(sub_comp.name) < 0)
 
- 	var	firstElementAttrs = {name:'div'};
+	 	var	firstElementAttrs = {name:'div'};
 
-    if(firstElementArray.length){
+	    if(firstElementArray.length){
 
-    	var separateAttrsFirstElement = separateAttribs(firstElementArray[0].attribs)
-        var flat_static_array = [];
-    	for(key in separateAttrsFirstElement.static){    		
-    		flat_static_array.push(key,separateAttrsFirstElement.static[key])
-    	} 
+	    	var separateAttrsFirstElement = separateAttribs(firstElementArray[0].attribs)
+	        var flat_static_array = [];
+	    	for(key in separateAttrsFirstElement.static){    		
+	    		flat_static_array.push(key,separateAttrsFirstElement.static[key])
+	    	} 
 
-      	firstElementAttrs = {
-			name:firstElementArray[0].name
-			,static:flat_static_array 
-			,dinamic:objDinamicAttrToStr(separateAttrsFirstElement.dinamic,firstElementArray[0].name)
-		};
-
-    }else{
-    	console.warn('warn: you need a root element into a "template" element!')
-    }						   
-
-    comp
+	      	firstElementAttrs = {
+				name:firstElementArray[0].name
+				,static:flat_static_array 
+				,dinamic:objDinamicAttrToStr(separateAttrsFirstElement.dinamic,firstElementArray[0].name)
+			};
+			comp
 		.children
 		.filter(sub_comp => sub_comp.type=='tag' && sub_comp.name == 'require' && sub_comp.attribs["from"])
 		.forEach(sub_comp => requiresComp.push(resolveTagRequire(sub_comp)));
 
-	//console.log(requiresComp);
+		var modAlias = requiresComp
+			.filter(item=>item.type!="style")
+			.sort(item=>item.type=="style")
+			.map(req_comp=> req_comp.alias);
 
-	var modAlias = requiresComp
-		.filter(item=>item.type!="style")
-		.sort(item=>item.type=="style")
-		.map(req_comp=> req_comp.alias);
+		var requiresPath = requiresComp
+			.sort(item=>item.type=="style")
+			.map(req_comp=> '"'+req_comp.path+'"');
 
-	var requiresPath = requiresComp
-		.sort(item=>item.type=="style")
-		.map(req_comp=> '"'+req_comp.path+'"');
+		templatePre += 'define(["exports","incremental-dom","ferrugemjs"';
 
-	templatePre += 'define(["exports","incremental-dom","ferrugemjs"';
-	/*
-	if(viewModel){
-		templatePre += ',"'+viewModel+'"';
-	}	
-	*/
-	if(requiresPath.length){
-		templatePre += ',';
-	}
+		if(requiresPath.length){
+			templatePre += ',';
+		}
 
-	templatePre += 	
-		requiresPath.join();		
+		templatePre += 	
+			requiresPath.join();		
 
-	templatePre += '], function (exports,_idom,_libfjs_mod_';
+		templatePre += '], function (exports,_idom,_libfjs_mod_';
 
-	if(modAlias.length){
-		templatePre += ',';
-	}
+		if(modAlias.length){
+			templatePre += ',';
+		}
 
-	templatePre += modAlias.join();
+		templatePre += modAlias.join();
 
-	templatePre += '){';
+		templatePre += '){';
 
-	if(viewModel){
-		templatePre += '\n var _'+tmp_mod_name+'_tmp = Object.keys('+tmp_mod_name+')[0];';
-	}else{
-		templatePre +='\n var _'+tmp_mod_name+'_tmp = '+_tmp_constructor_no_view_+';';
-	}
+		if(viewModel){			
+			templatePre += '\n var _'+viewModelAlias+'_tmp = Object.keys('+viewModelAlias+')[0];';
+		}else{
+			templatePre +='\n var _'+tmp_mod_name+'_tmp = '+_tmp_constructor_no_view_+';';
+		}
 
+		comp
+			.children
+			.filter(sub_comp => sub_comp.type=='style' && sub_comp.name == 'style')
+			.forEach(sub_comp => stylesStr += '\t'+tagStyleToStr(sub_comp));
+
+		templatePre +=  stylesStr+'\t';
+	
+		var subClazzName = '\t_clazz_sub_'+nextUID()+'_tmp';
+		templatePre += '\texports.default = (function(super_clazz){';
+		templatePre += '\tfunction '+subClazzName+'(){';
+		templatePre += '\tsuper_clazz.call(this);';
+		templatePre += '\t}';
+		templatePre += '\t'+subClazzName+'.prototype = Object.create(super_clazz.prototype);';
+		templatePre += '\t'+subClazzName+'.prototype.constructor = '+subClazzName+';';
+
+		templatePre += '\t'+subClazzName+'.prototype._$attrs$_ = '+JSON.stringify(firstElementAttrs)+';';
+
+		templatePre += '\t'+subClazzName+'.prototype.render = ';
 		
+		var childrenstr = '';
+		childrenstr += '\tfunction('+context_alias+'){';
+
+
+
+
+		comp.children.filter( sub_comp => sub_comp.type=='tag' && ['require','style','script'].indexOf(sub_comp.name) == -1 )[0].children.forEach(sub_comp => childrenstr += '\t'+componentToStr(sub_comp));
+
+
+		childrenstr += '\t}';
+		
+		templatePre += childrenstr;
+		
+		templatePre += '\treturn '+subClazzName+';';
+		
+		
+		if(viewModel){
+			//tmp_mod_name
+			//templatePre += ' })('+tmp_mod_name+'[_'+tmp_mod_name+'_tmp]);';
+			templatePre += '\t})('+viewModelAlias+'[_'+viewModelAlias+'_tmp]);';
+		}else{
+			templatePre += '\t})(function(){});';
+		}		
+		
+		templatePre += '\t});';
 	
-
-
-	comp
-		.children
-		.filter(sub_comp => sub_comp.type=='style' && sub_comp.name == 'style')
-		.forEach(sub_comp => stylesStr += '\t'+tagStyleToStr(sub_comp));
-
-	templatePre +=  stylesStr+'\t';
-
-	
-/*
-
-	comp.children.filter( sub_comp => sub_comp.type=='tag' && ['require','style','script'].indexOf(sub_comp.name) > -1 )[0].children.forEach(sub_comp => childrenstr += '\t\t'+componentToStr(sub_comp));
-
-*/
-	
-	var subClazzName = '\t_clazz_sub_'+nextUID()+'_tmp';
-	templatePre += '\texports.default = (function(super_clazz){';
-	templatePre += '\tfunction '+subClazzName+'(){';
-	templatePre += '\tsuper_clazz.call(this);';
-	templatePre += '\t}';
-	templatePre += '\t'+subClazzName+'.prototype = Object.create(super_clazz.prototype);';
-	templatePre += '\t'+subClazzName+'.prototype.constructor = '+subClazzName+';';
-
-	templatePre += '\t'+subClazzName+'.prototype._$attrs$_ = '+JSON.stringify(firstElementAttrs)+';';
-
-	templatePre += '\t'+subClazzName+'.prototype.render = ';
-	
-	var childrenstr = '';
-	childrenstr += '\tfunction('+context_alias+'){';
-
-
-
-
-	comp.children.filter( sub_comp => sub_comp.type=='tag' && ['require','style','script'].indexOf(sub_comp.name) == -1 )[0].children.forEach(sub_comp => childrenstr += '\t'+componentToStr(sub_comp));
-
-
-	childrenstr += '\t}';
-	
-	templatePre += childrenstr;
-	
-	templatePre += '\treturn '+subClazzName+';';
-	
-	
-	if(viewModel){
-		//templatePre += ' })('+tmp_mod_name+'[_'+tmp_mod_name+'_tmp]);';
-		templatePre += '\t})(function(){});';
+		return templatePre;
+	    }else{
+	    	console.warn(`warn: you need a root element into a template element to '${viewModel}' !`)
+	    	return "";
+	    }
 	}else{
-		templatePre += '\t})(function(){});';
-	}		
-	
-	templatePre += '\t});';
-	
-	/*
-	console.log(
-		modules_to_import
-		,modules_alias_to_import
-		,modules_css_to_import
-	)
-	*/
-	
-	return templatePre;
-	//return childrenstr;
+		console.warn(`warn: you need a root element into a template element to '${viewModel}' !`);
+    	return "";
+    }
+    return "";
 }
 
 function tagStyleToStr(comp){
@@ -555,9 +557,12 @@ function forConditionExtractor(comp){
 }
 
 function componentToStr(comp){
-	if(comp.name=='template'){		
-		return tagTemplateToStr(comp);
+
+	//ignorando os comentarios
+	if(comp.type=='comment'){
+		return "";
 	}
+
 	//eliminando os textos vazios
 	if(comp.type=='text'){
 		return tagTextToStr(comp);
@@ -582,8 +587,9 @@ function componentToStr(comp){
 	if(comp.name=='compose'){		
 		return tagComposeToStr(comp);
 	}
-
-	if([':','-'].indexOf(comp.name) > -1){
+	
+	if(comp.name.indexOf('-') > 0){
+		//console.log(`hey lets go ${comp.name}`);
 		return tagCustomToStr(comp);
 	}	
 
@@ -602,7 +608,7 @@ module.exports = function(rawHtml,config){
 	    if (error){
 	     	console.log(error)   
 	    }else{
-			dom.forEach(root_comp => appendBuffer(componentToStr(root_comp)));
+			dom.filter(elementDom=>elementDom.name == 'template').forEach(root_comp => appendBuffer(tagTemplateToStr(root_comp,config.viewModel)));
 			finalBuffer = buffer.join('');
 		}
 	});

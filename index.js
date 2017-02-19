@@ -14,13 +14,13 @@ module.exports = function(opt) {
 			var fileName = file.path;
 			fileName = fileName.match(/(\w|[-.])+$/g)[0];
 			fileName = fileName.substring(0,fileName.length-5);
-			var viewModel = './'+fileName;
+			var viewModel = fileName;
 			
 			var templateFile = new Buffer(decoder.write(file.contents));
 			//var rawHtml = new Buffer(decoder.write(file.contents));
 			
 			file.contents = new Buffer(
-				fjsparse(decoder.write(templateFile),{formatCode:(opt?opt.formatCode:false)})
+				fjsparse(decoder.write(templateFile),{viewModel:viewModel,formatCode:(opt?opt.formatCode:false)})
 			);
 		}
 		if (file.isStream()){}
