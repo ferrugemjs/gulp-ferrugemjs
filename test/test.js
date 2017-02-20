@@ -61,6 +61,16 @@ var rawHtml
 			<ui-test>Um lixo</ui-test>
 		</ui-template>
 		<input class="simple" type="text" placeholder="...new name" keyup.bind="this.name"></input>
+		<content></content>
+		<register-for
+			on-close
+			on-open.subscribe
+			on-start.once
+			on-digit:args="bonb-sign"
+		>
+			$(".super-modal").dialogmodal();
+			$("#especial-picker").datapicker();
+		</register-for>
 	</div>
 </template>`;
 

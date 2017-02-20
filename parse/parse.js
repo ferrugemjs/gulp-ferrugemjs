@@ -203,6 +203,37 @@ function tagTextToStr(comp){
 	return "";
 }
 
+function tagContentToStr(comp){
+	return '\t'+context_alias+'.content();';
+}
+
+function tagRegisterForToStr(comp){
+	//console.log(comp);
+	var registerStr = '';
+	if(!comp.children.length){
+		return '';
+	}
+	for(var key in comp.attribs){
+		var keyIsoled = key;
+		//caso seja um event pattern tradicional
+		var eventParam = '';
+		if(key.indexOf(":") > 0){
+			keyIsoled = key.split(":")[0];
+			eventParam = '"'+comp.attribs[key]+'",';
+		}
+		var propCamelCase = keyIsoled
+								.toLowerCase()
+								.replace(
+										/-(.)/g,
+ 										function(match, group1) {
+	        								return group1
+														.toUpperCase();
+	    								});
+		registerStr += '\t'+context_alias+'.'+propCamelCase+'('+eventParam+'function($param){'+comp.children[0].data+'}.bind('+context_alias+'));';
+	}
+	return registerStr;
+}
+
 function tagCustomToStr(comp){
 
 	//provendo um key caso nao exista, mas nao eh funcional em caso de foreach
@@ -587,6 +618,17 @@ function componentToStr(comp){
 	if(comp.name=='compose'){		
 		return tagComposeToStr(comp);
 	}
+
+	if(comp.name=='content'){		
+		return tagContentToStr(comp);
+	}
+
+
+	if(comp.name=='register-for'){		
+		return tagRegisterForToStr(comp);
+	}
+
+
 	
 	if(comp.name.indexOf('-') > 0){
 		//console.log(`hey lets go ${comp.name}`);
