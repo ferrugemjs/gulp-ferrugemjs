@@ -9,6 +9,8 @@ var rawHtml
 	<require from="tpl-a"></require>
 	<require from="./test/tpl-b"></require>
 	<require from="./test/tpl-c as tpl-c1"></require>
+	<require from="./test/tpl-c2 as tpl-c12" type="script"></require>
+	<require from="./test/tpl-c3 as tpl-c13" type="namespace"></require>
 	<require from="./test/style-a.css!"></require>
 	<require from="css!./test/style-b.css"></require>
 	<require from="style!./test/style-c.css"></require>
@@ -71,6 +73,7 @@ var rawHtml
 			$(".super-modal").dialogmodal();
 			$("#especial-picker").datapicker();
 		</register-for>
+		<tpl-c12 test="12" chess="\${this.oblivion}"></tpl-c12>
 	</div>
 </template>`;
 

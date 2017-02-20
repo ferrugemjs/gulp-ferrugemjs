@@ -3,6 +3,7 @@ var beautify = require('js-beautify').js_beautify;
 
 var buffer = [];
 var context_alias = '$_this_$';
+var requireScriptList = [];
 
 var incrementalUID = new Date().getTime();
 
@@ -18,6 +19,19 @@ function appendBuffer(txt){
 function flush () {
   buffer.length = 0;
   buffer = [];
+  requireScriptList.length = 0;
+  requireScriptList = [];
+}
+
+function slashToCamelCase(str){
+	return str
+	.toLowerCase()
+	.replace(
+			/-(.)/g,
+			function(match, group1) {
+				return group1.toUpperCase();
+			}
+	);
 }
 
 function pathToAlias(p_resource_url){
@@ -221,14 +235,7 @@ function tagRegisterForToStr(comp){
 			keyIsoled = key.split(":")[0];
 			eventParam = '"'+comp.attribs[key]+'",';
 		}
-		var propCamelCase = keyIsoled
-								.toLowerCase()
-								.replace(
-										/-(.)/g,
- 										function(match, group1) {
-	        								return group1
-														.toUpperCase();
-	    								});
+		var propCamelCase = slashToCamelCase(keyIsoled);
 		registerStr += '\t'+context_alias+'.'+propCamelCase+'('+eventParam+'function($param){'+comp.children[0].data+'}.bind('+context_alias+'));';
 	}
 	return registerStr;
@@ -303,6 +310,20 @@ function tagCustomToStr(comp){
 	basicTag += '\t})();';
 
 	return basicTag;
+}
+
+function tagRpFunctionToStr(comp){
+	var rpfnStr = '';
+	var nameCamel = slashToCamelCase(comp.name);
+	var attrsCamel = {};
+	var separate_attrs = separateAttribs(comp.attribs);
+	for(var key in separateAttribs.dinamic){
+    	var keyCamel = slashToCamelCase(key);
+		//aplicar contexto
+		attrsCamel[keyCamel] = separateAttribs.dinamic[key];
+	}
+	rpfnStr += '\t_'+nameCamel+'.default('+attrsCamel+');'
+	return rpfnStr;
 }
 
 function tagComposeToStr(comp){
@@ -394,6 +415,9 @@ function tagTemplateToStr(comp,viewModel){
 		viewModelAlias = '_'+pathToAlias(viewModel).alias.replace(/-/g,"_");
 		requiresComp.push({type: 'controller', path:viewModel, alias: viewModelAlias});
 	}
+
+	
+
 	var tmp_mod_name = "_mod_"+viewModelAlias+"_"+nextUID();
 
 	var _tmp_constructor_no_view_ = '"_tmp_constructor_no_view_'+tmp_mod_name+'"';
@@ -432,6 +456,8 @@ function tagTemplateToStr(comp,viewModel){
 			.sort(item=>item.type=="style")
 			.map(req_comp=> '"'+req_comp.path+'"');
 
+		requireScriptList = requiresComp.filter(reqcomp=>reqcomp.type=="script").map(reqcomp=>reqcomp.alias);
+		
 		templatePre += 'define(["exports","incremental-dom","ferrugemjs"';
 
 		if(requiresPath.length){
@@ -628,7 +654,11 @@ function componentToStr(comp){
 		return tagRegisterForToStr(comp);
 	}
 
-
+	console.log(comp.name,requireScriptList);
+	
+	if(comp.name.indexOf("-") > 0 && requireScriptList.indexOf(comp.name) > -1){
+		return tagRpFunctionToStr(comp);
+	}
 	
 	if(comp.name.indexOf('-') > 0){
 		//console.log(`hey lets go ${comp.name}`);
