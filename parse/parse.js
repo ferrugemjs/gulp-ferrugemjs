@@ -317,12 +317,15 @@ function tagRpFunctionToStr(comp){
 	var nameCamel = slashToCamelCase(comp.name);
 	var attrsCamel = {};
 	var separate_attrs = separateAttribs(comp.attribs);
-	for(var key in separateAttribs.dinamic){
+	for(var key in separate_attrs.dinamic){
     	var keyCamel = slashToCamelCase(key);
-		//aplicar contexto
-		attrsCamel[keyCamel] = separateAttribs.dinamic[key];
+		attrsCamel[keyCamel] =  separate_attrs.dinamic[key];
 	}
-	rpfnStr += '\t_'+nameCamel+'.default('+attrsCamel+');'
+	for(var key in separate_attrs.static){
+    	var keyCamel = slashToCamelCase(key);
+		attrsCamel[keyCamel] = separate_attrs.static[key];
+	}
+	rpfnStr += '\t_'+comp.name.replace(/-/g,"_")+'.default('+attrToContext(attrsCamel)+');'
 	return rpfnStr;
 }
 
@@ -456,7 +459,9 @@ function tagTemplateToStr(comp,viewModel){
 			.sort(item=>item.type=="style")
 			.map(req_comp=> '"'+req_comp.path+'"');
 
-		requireScriptList = requiresComp.filter(reqcomp=>reqcomp.type=="script").map(reqcomp=>reqcomp.alias);
+		requireScriptList = requiresComp
+										.filter(reqcomp=>reqcomp.type=="script")
+										.map(reqcomp=>reqcomp.alias.replace(/_/g,"-"));
 		
 		templatePre += 'define(["exports","incremental-dom","ferrugemjs"';
 
@@ -654,14 +659,11 @@ function componentToStr(comp){
 		return tagRegisterForToStr(comp);
 	}
 
-	console.log(comp.name,requireScriptList);
-	
 	if(comp.name.indexOf("-") > 0 && requireScriptList.indexOf(comp.name) > -1){
 		return tagRpFunctionToStr(comp);
 	}
 	
 	if(comp.name.indexOf('-') > 0){
-		//console.log(`hey lets go ${comp.name}`);
 		return tagCustomToStr(comp);
 	}	
 
