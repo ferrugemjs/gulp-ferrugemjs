@@ -325,7 +325,7 @@ function tagRpFunctionToStr(comp){
     	var keyCamel = slashToCamelCase(key);
 		attrsCamel[keyCamel] = separate_attrs.static[key];
 	}
-	rpfnStr += '\t_'+comp.name.replace(/-/g,"_")+'.default('+attrToContext(attrsCamel)+');'
+	rpfnStr += '\t'+comp.name.replace(/-/g,"_")+'.default('+attrToContext(attrsCamel)+');'
 	return rpfnStr;
 }
 
