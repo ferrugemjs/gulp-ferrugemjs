@@ -322,8 +322,13 @@ function tagRpFunctionToStr(comp){
 		attrsCamel[keyCamel] =  separate_attrs.dinamic[key];
 	}
 	for(var key in separate_attrs.static){
-    	var keyCamel = slashToCamelCase(key);
-		attrsCamel[keyCamel] = separate_attrs.static[key];
+		var keyCamel = slashToCamelCase(key);
+		//verificar se eh uma funcao
+		if(key.indexOf("on-")==0){
+			attrsCamel[keyCamel] = adjustEvents(key,separate_attrs.static[key]).value;
+		}else{
+			attrsCamel[keyCamel] = separate_attrs.static[key];
+		}	
 	}
 	rpfnStr += '\t'+comp.name.replace(/-/g,"_")+'.default('+attrToContext(attrsCamel)+');'
 	return rpfnStr;

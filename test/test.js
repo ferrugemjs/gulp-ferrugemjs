@@ -73,7 +73,12 @@ var rawHtml
 			$(".super-modal").dialogmodal();
 			$("#especial-picker").datapicker();
 		</register-for>
-		<tpl-c12 test="12" chess="\${this.oblivion}"></tpl-c12>
+		<tpl-c12 
+		test="12" 
+		chess="\${this.oblivion}"
+		on-trigger="this.test"
+		on-peidar="this.ops(true)"
+		/>
 	</div>
 </template>`;
 
