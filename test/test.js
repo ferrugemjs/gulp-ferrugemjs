@@ -79,6 +79,35 @@ var rawHtml
 		on-trigger="this.test"
 		on-peidar="this.ops(true)"
 		/>
+
+		<if condition="1 < 4">
+			case 0
+		</if>
+
+
+
+		<if condition="1 < 4">
+			case 1
+		<else>
+			case 1.a	
+		</if>
+
+		<if condition="1 < 5">
+			case 2
+		<elseif condition="1 > 30">
+			case 2.a	
+		</if>
+
+
+		<if condition="1 < 6">
+			case 3
+		<elseif condition="1 > 80">	
+			case 3.a
+		<elseif condition="1 > 20">	
+			case 3.b	
+		<else>
+			case 3.c	
+		</if>
 	</div>
 </template>`;
 

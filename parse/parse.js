@@ -180,15 +180,27 @@ function objDinamicAttrToStr(attribs,tagName){
 
 }
 
-
-
-
 function tagIfToStr(comp){
 	var txtIf = '\tif('+contextToAlias(comp.attribs.condition)+'){';
 	comp.children.forEach(sub_comp => txtIf += '\t'+componentToStr(sub_comp));
 	txtIf += '\t};';
 	return txtIf;
 }
+
+function tagElseToStr(comp){
+	var txtElse = '\t}else{';
+	comp.children.forEach(sub_comp => txtElse += '\t'+componentToStr(sub_comp));
+	txtElse += '\t';
+	return txtElse;
+}
+
+function tagElseIfToStr(comp){
+	var txtElseIf = '\t}else if('+contextToAlias(comp.attribs.condition)+'){';
+	comp.children.forEach(sub_comp => txtElseIf += '\t'+componentToStr(sub_comp));
+	txtElseIf += '\t';
+	return txtElseIf;
+}
+
 
 function tagForToStr(comp){
 	var array_each = comp.attribs.each.split(" in ");
@@ -649,6 +661,14 @@ function componentToStr(comp){
 
 	if(comp.name=='if'){
 		return tagIfToStr(comp);
+	}
+
+	if(comp.name=='else'){
+		return tagElseToStr(comp);
+	}
+	
+	if(comp.name=='elseif'){
+		return tagElseIfToStr(comp);
 	}
 
 	if(comp.name=='compose'){		
