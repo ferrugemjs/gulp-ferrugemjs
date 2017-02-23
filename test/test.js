@@ -64,15 +64,7 @@ var rawHtml
 		</ui-template>
 		<input class="simple" type="text" placeholder="...new name" keyup.bind="this.name"></input>
 		<content></content>
-		<register-for
-			on-close
-			on-open.subscribe
-			on-start.once
-			on-digit:args="bonb-sign"
-		>
-			$(".super-modal").dialogmodal();
-			$("#especial-picker").datapicker();
-		</register-for>
+
 		<tpl-c12 
 		test="12" 
 		chess="\${this.oblivion}"
@@ -80,6 +72,13 @@ var rawHtml
 		on-peidar="this.ops(true)"
 		/>
 
+		<script if="1 < 8">
+			$jq('open');
+			$jq('other magic');
+			@this.test();
+		</script>
+
+<!--
 		<if condition="1 < 4">
 			case 0
 		</if>
@@ -108,6 +107,18 @@ var rawHtml
 		<else>
 			case 3.c	
 		</if>
+-->
+		<register-for
+			on-close
+			on-open.subscribe
+			on-start.once
+			on-digit:args="bonb-sign"
+		>
+			$(".super-modal").dialogmodal();
+			$("#especial-picker").datapicker();
+			@this.test();
+		</register-for>
+
 	</div>
 </template>`;
 

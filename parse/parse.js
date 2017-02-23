@@ -248,9 +248,19 @@ function tagRegisterForToStr(comp){
 			eventParam = '"'+comp.attribs[key]+'",';
 		}
 		var propCamelCase = slashToCamelCase(keyIsoled);
-		registerStr += '\t'+context_alias+'.'+propCamelCase+'('+eventParam+'function($param){'+comp.children[0].data+'}.bind('+context_alias+'));';
+		registerStr += '\t'+context_alias+'.'+propCamelCase+'('+eventParam+'function($param){'+ comp.children[0].data.replace(/@this\./gm,context_alias+'.') +'}.bind('+context_alias+'));';
 	}
 	return registerStr;
+}
+
+function tagCommandToStr(comp){
+	if(comp.children && comp.children.length){
+		var text = comp.children[0].data;
+		if(text && text.trim()){
+			return text.replace(/@this\./gm,context_alias+'.');
+		};
+	}
+	return '';
 }
 
 function tagCustomToStr(comp){
@@ -677,6 +687,10 @@ function componentToStr(comp){
 
 	if(comp.name=='content'){		
 		return tagContentToStr(comp);
+	}
+
+	if(comp.name=='script'){
+		return tagCommandToStr(comp);
 	}
 
 
