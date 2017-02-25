@@ -59,12 +59,7 @@ var rawHtml
 		<li each="item in this.itens">epa</li>
 		</ul>
 		<hhh:test-t1 key-ops="humm" id:key="123"/>
-		<ui-template>
-			<ui-test>Um lixo</ui-test>
-		</ui-template>
 		<input class="simple" type="text" placeholder="...new name" keyup.bind="this.name"></input>
-		<content></content>
-
 		<tpl-c12 
 		test="12" 
 		chess="\${this.oblivion}"
@@ -118,7 +113,13 @@ var rawHtml
 			$("#especial-picker").datapicker();
 			@this.test();
 		</register-for>
-
+		<ui-template>
+			um lixo
+		</ui-template>
+		<content></content>
+		<router-section>
+			<route path="/fruit-app" view-model="dist/example/fruit-app/fruit-app"/>
+		</router-section>
 	</div>
 </template>`;
 

@@ -263,6 +263,20 @@ function tagCommandToStr(comp){
 	return '';
 }
 
+function tagRouteToStr(comp){
+	var separateAttrsElement = separateAttribs(comp.attribs)
+	var mod_tmp_static_attr_str=objStaticAttrToStr(separateAttrsElement.static);
+
+	//console.log(separateAttrsElement.static);
+	var attrsCamel = {};
+	for(var key in separateAttrsElement.static){
+		attrsCamel[slashToCamelCase(key)] = separateAttrsElement.static[key];
+	}
+
+	var routeStr = '_$_inst_$_.routes.push('+JSON.stringify(attrsCamel)+');';
+	return routeStr;
+}
+
 function tagCustomToStr(comp){
 
 	//provendo um key caso nao exista, mas nao eh funcional em caso de foreach
@@ -321,13 +335,18 @@ function tagCustomToStr(comp){
 	//console.log('aqui----->',separate_attrs.dinamic)
 
 	basicTag = '\t(function(){ var _$_inst_$_ = _libfjs_mod_.default.build({"classFactory":'+tagname_constructor+',"tag":"div","alias":"'+name+'","target":"","hostVars":'+_tmp_host_vars_+',"staticVars":'+_tmp_static_vars+'});';
-	basicTag += '\t_libfjs_mod_.default.content.call(_$_inst_$_,function(){';
-
-	if(comp.children){
-		comp.children.forEach(sub_comp => basicTag += '\t'+componentToStr(sub_comp));
+	
+	if(comp.children && comp.children.length){
+		//console.log(comp.children[0].children);
+		if(comp.name=="router-section"){
+			comp.children.forEach(sub_comp => basicTag += '\t'+componentToStr(sub_comp));
+		}else{		
+			basicTag += '\t_libfjs_mod_.default.content.call(_$_inst_$_,function(){';
+			comp.children.forEach(sub_comp => basicTag += '\t'+componentToStr(sub_comp));
+			basicTag += '\t});';
+		}
 	}
 
-	basicTag += '\t});';	    	
 	basicTag += '\t_libfjs_mod_.default.reDraw.call(_$_inst_$_);';
 	basicTag += '\t})();';
 
@@ -680,7 +699,9 @@ function componentToStr(comp){
 	if(comp.name=='elseif'){
 		return tagElseIfToStr(comp);
 	}
-
+	if(comp.name=='route'){
+		return tagRouteToStr(comp);
+	}
 	if(comp.name=='compose'){		
 		return tagComposeToStr(comp);
 	}
