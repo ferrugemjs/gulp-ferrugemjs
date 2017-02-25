@@ -337,8 +337,10 @@ function tagCustomToStr(comp){
 	basicTag = '\t(function(){ var _$_inst_$_ = _libfjs_mod_.default.build({"classFactory":'+tagname_constructor+',"tag":"div","alias":"'+name+'","target":"","hostVars":'+_tmp_host_vars_+',"staticVars":'+_tmp_static_vars+'});';
 	
 	if(comp.children && comp.children.length){
-		//console.log(comp.children[0].children);
-		if(comp.name=="router-section"){
+		var hasRoute = comp.children.some(sub_comp=>sub_comp.name=="route");
+		//console.log('has route',hasRoute)
+		if(hasRoute){
+			console.log(comp.children[1].type);
 			comp.children.forEach(sub_comp => basicTag += '\t'+componentToStr(sub_comp));
 		}else{		
 			basicTag += '\t_libfjs_mod_.default.content.call(_$_inst_$_,function(){';
