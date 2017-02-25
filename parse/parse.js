@@ -230,7 +230,7 @@ function tagTextToStr(comp){
 }
 
 function tagContentToStr(comp){
-	return '\t'+context_alias+'.content();';
+	return '\t_libfjs_mod_.default.content.call('+context_alias+');';
 }
 
 function tagRegisterForToStr(comp){
@@ -321,7 +321,7 @@ function tagCustomToStr(comp){
 	//console.log('aqui----->',separate_attrs.dinamic)
 
 	basicTag = '\t(function(){ var _$_inst_$_ = _libfjs_mod_.default.build({"classFactory":'+tagname_constructor+',"tag":"div","alias":"'+name+'","target":"","hostVars":'+_tmp_host_vars_+',"staticVars":'+_tmp_static_vars+'});';
-	basicTag += '\t_$_inst_$_.content(function(){';
+	basicTag += '\t_libfjs_mod_.default.content.call(_$_inst_$_,function(){';
 
 	if(comp.children){
 		comp.children.forEach(sub_comp => basicTag += '\t'+componentToStr(sub_comp));
