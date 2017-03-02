@@ -75,7 +75,7 @@ function attrToContext(attribs){
 }
 
 
-function encodeAndSetContext(str){
+function encodeAndSetContext(str){		
 		return str.replace(/\$\{([^}]*)\}/g,function($1,$2){		
   			return '"+('+contextToAlias($2)+')+"';
 		});	
@@ -158,20 +158,33 @@ function objDinamicAttrToStr(attribs,tagName){
 
 			var eventStripped =	adjustEvents('on'+key.substring(0,key.indexOf("."))+'',attribs[key]);
 			obj_array.push(eventStripped.key);
-			obj_array.push(eventStripped.value);
+			//obj_array.push(eventStripped.value);
+			var vlFn = eventStripped.value;
+			//console.log(vlFn,"("+vlFn.substring(2,vlFn.length-1)+")");
+			obj_array.push("#{#"+vlFn.substring(2,vlFn.length-1)+"#}#");
+
+			//console.log(key,attribs[key],eventStripped.value);
+
+			//console.log(eventStripped.value)
 
 			//console.log(`aqui hoooo--->`,attribs[key])					
 		}else{								
 			if(typeof attribs[key] === "string" && attribs[key].indexOf("${") === 0){
 				obj_array.push(''+key+'');
-				obj_array.push(contextToAlias(attribs[key]));
+				var vlFn = attribs[key];
+				//obj_array.push(contextToAlias(attribs[key]));
+				obj_array.push(contextToAlias("#{#"+vlFn.substring(2,vlFn.length-1)+"#}#"));
 			}
 		}							
 	}
 	var mod_tmp_attr_str_ = '"'+obj_array.join('","')+'"';	
-	var mod_tmp_attr_str = mod_tmp_attr_str_.replace(/\"\$\{([^}]*)\}\"/g,function($1,$2){
-			return "("+$2+")";
-	});	
+/*	
+var mod_tmp_attr_str = mod_tmp_attr_str_.replace(/\"\$\{([^}]*)\}\"/g,function($0,$1){
+			return "("+$1+")";
+	});
+*/
+	var mod_tmp_attr_str = mod_tmp_attr_str_;		
+	//console.log(mod_tmp_attr_str_,mod_tmp_attr_str);
 	mod_tmp_attr_str = mod_tmp_attr_str.replace(/\"#{#/g,"(");
 	mod_tmp_attr_str = mod_tmp_attr_str.replace(/#}#\"/g,")");
 
@@ -340,7 +353,7 @@ function tagCustomToStr(comp){
 		var hasRoute = comp.children.some(sub_comp=>sub_comp.name=="route");
 		//console.log('has route',hasRoute)
 		if(hasRoute){
-			console.log(comp.children[1].type);
+			//console.log(comp.children[1].type);
 			comp.children.forEach(sub_comp => basicTag += '\t'+componentToStr(sub_comp));
 		}else{		
 			basicTag += '\t_libfjs_mod_.default.content.call(_$_inst_$_,function(){';
@@ -437,8 +450,9 @@ function tagBasicToStr(comp){
 
 
 	var mod_tmp_static_attr_str=objStaticAttrToStr(separateAttrsElement.static);
-	var mod_tmp_attr_str = objDinamicAttrToStr(separateAttrsElement.dinamic,comp.name);
 	
+	var mod_tmp_attr_str = objDinamicAttrToStr(separateAttrsElement.dinamic,comp.name);
+	//console.log(separateAttrsElement.dinamic,mod_tmp_attr_str);
 	var basicTag = '\t_idom.elementOpen("'+comp.name+'",'+static_key+','+mod_tmp_static_attr_str+','+mod_tmp_attr_str+');';
 	if(comp.children){
 		comp.children.forEach(sub_comp => basicTag += '\t'+componentToStr(sub_comp));

@@ -120,6 +120,15 @@ var rawHtml
 		<router-section>
 			<route path="/fruit-app" view-model="dist/example/fruit-app/fruit-app"/>
 		</router-section>
+		<a 
+			click.trigger="this.testa"
+			mouseup.trigger="this.testa(true)"
+			mousedown.trigger="this.refresh"
+			mouseover.trigger="this.refresh({a:1})"
+			mouseenter.trigger="this.refresh({a:'b'})"
+			change.trigger="this.refresh({a:this.b})"	
+		>teste</a>
+
 	</div>
 </template>`;
 
