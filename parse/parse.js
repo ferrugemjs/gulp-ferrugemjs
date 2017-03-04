@@ -518,12 +518,22 @@ function tagTemplateToStr(comp,viewModel){
 
 		var modAlias = requiresComp
 			.filter(item=>item.type!="style")
-			.sort(item=>item.type=="style")
+			.sort(p=>p.path)
 			.map(req_comp=> req_comp.alias);
 
-		var requiresPath = requiresComp
-			.sort(item=>item.type=="style")
+
+
+
+		var requiresPath = requiresComp		
+			.filter(item=>item.type!="style")	
+			.sort(p=>p.path)
 			.map(req_comp=> '"'+req_comp.path+'"');
+
+		var onlyRequiresStyles = requiresComp
+			.filter(item=>item.type=="style")
+			.map(req_comp=> '"'+req_comp.path+'"');	
+
+		//console.log(modAlias,requiresPath)	
 
 		requireScriptList = requiresComp
 										.filter(reqcomp=>reqcomp.type=="script")
@@ -536,7 +546,14 @@ function tagTemplateToStr(comp,viewModel){
 		}
 
 		templatePre += 	
-			requiresPath.join();		
+			requiresPath.join();
+
+		if(onlyRequiresStyles.length){
+			templatePre += ',';
+		}			
+
+		templatePre += 	
+			onlyRequiresStyles.join();		
 
 		templatePre += '], function (exports,_idom,_libfjs_mod_';
 
@@ -628,6 +645,8 @@ function resolveTagRequire(comp){
 	var fromstr = comp.attribs["from"];	
 	//suporte aos plugins mais conhecidos
 	if(fromstr.lastIndexOf(".css!") > -1 || fromstr.indexOf("css!") == 0 || fromstr.indexOf("style!") == 0){
+		//console.log('eh style',fromstr)
+		
 		return {
 			type:"style"
 			,path:fromstr

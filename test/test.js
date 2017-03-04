@@ -6,14 +6,24 @@ var fjsparse = require("../parse/parse");
 var rawHtml 
 = 
 `<template no-view-model="true">
-	<require from="tpl-a"></require>
-	<require from="./test/tpl-b"></require>
-	<require from="./test/tpl-c as tpl-c1"></require>
-	<require from="./test/tpl-c2 as tpl-c12" type="script"></require>
-	<require from="./test/tpl-c3 as tpl-c13" type="namespace"></require>
-	<require from="./test/style-a.css!"></require>
-	<require from="css!./test/style-b.css"></require>
-	<require from="style!./test/style-c.css"></require>
+	<require from="../commons/assets/commons-style.css!"/>
+	<require from="eliorcohen/semantic-ui/dist/semantic.min.css!"/>
+	<require from="jquery as jq" type="script"/>	
+	<require from="eliorcohen/semantic-ui/dist/semantic.min as semantic-lib" type="script"/>
+	<require from="ferrugemjs-router as rt" type="namespace"/>
+	<require from="page as pg" type="script"/> 
+	<require from="../menus/main-menu"/>
+	<require from="../menus/apps-menu"/>
+	<require from="../tab-apps/tab-apps"/>
+	<require from="../login/login-form"/>
+	<require from="tpl-a"/>
+	<require from="./test/tpl-b"/>
+	<require from="./test/tpl-c as tpl-c1"/>
+	<require from="./test/tpl-c2 as tpl-c12" type="script"/>
+	<require from="./test/tpl-c3 as tpl-c13" type="namespace"/>
+	<require from="./test/style-a.css!"/>
+	<require from="css!./test/style-b.css"/>
+	<require from="style!./test/style-c.css"/>
 	<script></script>
 	<style>
 		.test{
@@ -135,6 +145,7 @@ var rawHtml
 		</compose>
 	</div>
 </template>`;
+
 
 console.log(
 
