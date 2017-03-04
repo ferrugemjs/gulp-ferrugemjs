@@ -400,7 +400,9 @@ function tagComposeToStr(comp){
 	var static_key = '"tmp_key_inst_compose_view'+nextUID()+'"';
 	if(comp.attribs && comp.attribs["key:id"]){
 		static_key =  '"'+encodeAndSetContext(comp.attribs["key:id"])+'"';
-		delete comp.attribs["key:id"];
+		//delete comp.attribs["key:id"];
+	}else{
+		comp.attribs["key:id"]=static_key.replace(/"/g,"");
 	}
 
 	comp.attribs["is"] = "compose-view";

@@ -45,16 +45,6 @@ var rawHtml
 		<span key:id="hummm">
 		 <p key:id="\${this.test}"></p>
 		</span>
-		<compose 
-			view:from="./newview/statck-plz"
-		></compose>
-		<compose
-			quenada="\${this.opse}" 
-			id="dinamiccompose1" 
-			other-dinamic="\${this.title}"
-			view:from="\${this.myview}"
-		>
-		</compose>
 		<ul>
 		<li each="item in this.itens">epa</li>
 		</ul>
@@ -128,7 +118,21 @@ var rawHtml
 			mouseenter.trigger="this.refresh({a:'b'})"
 			change.trigger="this.refresh({a:this.b})"	
 		>teste</a>
-
+		<compose 
+			key:id="h123"
+			view:from="./newview/statck-plz"
+		></compose>
+		<compose 
+			key:id="\${this.uid}"
+			view:from="./newview/statck-plz2"
+		></compose>
+		<compose
+			quenada="\${this.opse}" 
+			id="dinamiccompose1" 
+			other-dinamic="\${this.title}"
+			view:from="\${this.myview}"
+		>
+		</compose>
 	</div>
 </template>`;
 
