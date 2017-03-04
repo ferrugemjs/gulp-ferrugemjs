@@ -401,8 +401,10 @@ function tagComposeToStr(comp){
 	if(comp.attribs && comp.attribs["key:id"]){
 		static_key =  '"'+encodeAndSetContext(comp.attribs["key:id"])+'"';
 		//delete comp.attribs["key:id"];
+		comp.attribs["key-id"]=comp.attribs["key:id"];
 	}else{
 		comp.attribs["key:id"]=static_key.replace(/"/g,"");
+		comp.attribs["key-id"]=static_key.replace(/"/g,"");
 	}
 
 	comp.attribs["is"] = "compose-view";
@@ -424,8 +426,8 @@ function tagComposeToStr(comp){
 	
 	
 
-	var basicTag = '\t_idom.elementOpen("compose-view",'+static_key+','+mod_tmp_static_attr_str_array_flat+','+mod_tmp_attr_str+');';
-	basicTag += '\t_idom.elementClose("compose-view");'
+	var basicTag = '\t_idom.elementOpen("div",'+static_key+','+mod_tmp_static_attr_str_array_flat+','+mod_tmp_attr_str+');';
+	basicTag += '\t_idom.elementClose("div");'
 	
 	basicTag += '\t_libfjs_mod_.default.compose("'+tmp_view+'",'+static_key+','+attrToContext(separateAttrsElement.dinamic)+','+mod_tmp_static_attr_str+',function(){';
 
