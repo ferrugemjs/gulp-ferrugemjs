@@ -143,6 +143,8 @@ var rawHtml
 			view:from="\${this.myview}"
 		>
 		</compose>
+		<input type="text" change.bind="this.title"/>
+		<input type="checkbox" value="y" checked="\${this.isNull=='y'}" change.bind="this.isNull"/>
 	</div>
 </template>`;
 

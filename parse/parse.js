@@ -134,16 +134,20 @@ function objStaticAttrToStr(attribs){
 
 }
 
-function objDinamicAttrToStr(attribs,tagName){
+function objDinamicAttrToStr(attribs,tagName,type){
 	var obj_array = [];		
-	var bindField = "";			
+	var bindField = "";	
 	for(var key in attribs){
 		var indxBind = 	key.indexOf(".bind");
 		if(indxBind > -1 && (tagName=="input" || tagName=="textarea" || tagName=="select")){
 			var evtstr = "on"+key.substring(0,indxBind);
 			obj_array.push(evtstr);
+			//console.log(attribs.type);
 			if(tagName=="select"){									
 				obj_array.push('#{#function($evt){\nvar tmp_$target$_evt=$evt.target;\n'+(attribs[key])+'=tmp_$target$_evt.options[tmp_$target$_evt.selectedIndex].value;\n'+context_alias+'.refresh();\n}#}#');
+			}else if(type=="checkbox"||type=="radio"){		
+				//console.log( attribs[key]);							
+				obj_array.push('#{#function($evt){\n'+( attribs[key])+'=$evt.target.checked?$evt.target.value:null;\n'+context_alias+'.refresh()\n}\n#}#');
 			}else{		
 				//console.log( attribs[key]);							
 				obj_array.push('#{#function($evt){\n'+( attribs[key])+'=$evt.target.value;\n'+context_alias+'.refresh()\n}\n#}#');
@@ -452,16 +456,45 @@ function tagBasicToStr(comp){
 
 	var separateAttrsElement = separateAttribs(comp.attribs)
 
+	var type = (separateAttrsElement.static?separateAttrsElement.static["type"]:"");
+	var checkedCondition = '';
+
+	if(comp.name == 'input' && (type == 'checkbox'||type == 'radio') && separateAttrsElement.dinamic["checked"]){
+		checkedCondition = encodeValue('"'+separateAttrsElement.dinamic["checked"]+'"');
+		delete separateAttrsElement.dinamic["checked"];
+	}
 
 	var mod_tmp_static_attr_str=objStaticAttrToStr(separateAttrsElement.static);
 	
-	var mod_tmp_attr_str = objDinamicAttrToStr(separateAttrsElement.dinamic,comp.name);
+
+
+
+	var mod_tmp_attr_str = objDinamicAttrToStr(separateAttrsElement.dinamic,comp.name,type);
 	//console.log(separateAttrsElement.dinamic,mod_tmp_attr_str);
-	var basicTag = '\t_idom.elementOpen("'+comp.name+'",'+static_key+','+mod_tmp_static_attr_str+','+mod_tmp_attr_str+');';
+	var basicTag = '';
+	if(checkedCondition){
+		//console.log('has 3 conditions!!!!',comp.name,type,separateAttrsElement.dinamic["checked"]);
+		separateAttrsElement.static["checked"] = "checked";
+		var mod_tmp_static_attr_str2=objStaticAttrToStr(separateAttrsElement.static);
+	
+
+		
+		basicTag += '\tif'+checkedCondition+'{';
+		basicTag += '\t_idom.elementOpen("'+comp.name+'",'+static_key+','+mod_tmp_static_attr_str2+','+mod_tmp_attr_str+');';
+		basicTag += '\t_idom.elementClose("'+comp.name+'");';
+		basicTag += '\t}else{';
+		basicTag += '\t_idom.elementOpen("'+comp.name+'",'+static_key+','+mod_tmp_static_attr_str+','+mod_tmp_attr_str+');';
+		basicTag += '\t_idom.elementClose("'+comp.name+'");';
+		basicTag += '\t};';
+
+		return basicTag;
+	}
+
+	basicTag = '\t_idom.elementOpen("'+comp.name+'",'+static_key+','+mod_tmp_static_attr_str+','+mod_tmp_attr_str+');';
 	if(comp.children){
 		comp.children.forEach(sub_comp => basicTag += '\t'+componentToStr(sub_comp));
 	}
-	basicTag += '\t_idom.elementClose("'+comp.name+'");'
+	basicTag += '\t_idom.elementClose("'+comp.name+'");';
 	return basicTag;
 }
 
