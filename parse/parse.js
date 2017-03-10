@@ -474,13 +474,14 @@ function tagBasicToStr(comp){
 	var basicTag = '';
 	if(checkedCondition){
 		//console.log('has 3 conditions!!!!',comp.name,type,separateAttrsElement.dinamic["checked"]);
-		separateAttrsElement.static["checked"] = "checked";
-		var mod_tmp_static_attr_str2=objStaticAttrToStr(separateAttrsElement.static);
-	
-
+		//separateAttrsElement.dinamic["checked"] = "checked";
+		var mod_tmp_attr_str2 = '"checked","checked"';
+		if(mod_tmp_attr_str!='""'){
+			mod_tmp_attr_str2 = mod_tmp_attr_str+',"checked","checked"';
+		}
 		
 		basicTag += '\tif'+checkedCondition+'{';
-		basicTag += '\t_idom.elementOpen("'+comp.name+'",'+static_key+','+mod_tmp_static_attr_str2+','+mod_tmp_attr_str+');';
+		basicTag += '\t_idom.elementOpen("'+comp.name+'",'+static_key+','+mod_tmp_static_attr_str+','+mod_tmp_attr_str2+');';
 		basicTag += '\t_idom.elementClose("'+comp.name+'");';
 		basicTag += '\t}else{';
 		basicTag += '\t_idom.elementOpen("'+comp.name+'",'+static_key+','+mod_tmp_static_attr_str+','+mod_tmp_attr_str+');';

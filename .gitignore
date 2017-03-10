@@ -1,3 +1,4 @@
 node_modules
 .npmrc
 test/*.html.js
+npm-debug.log
