@@ -463,7 +463,7 @@ function tagBasicToStr(comp){
 		negateAttribute = "selected";
 	}
 
-	if((['a','option','input','select','button','textarea','fieldset','optgroup','keygen'].indexOf(comp.name) > -1) && separateAttrsElement.dinamic["disabled"]){
+	if((['a','form','option','input','select','button','textarea','fieldset','optgroup','keygen'].indexOf(comp.name) > -1) && separateAttrsElement.dinamic["disabled"]){
 		var disabledCondition = separateAttrsElement.dinamic["disabled"];
 		separateAttrsElement.dinamic["disabled"] = disabledCondition.substring(0,disabledCondition.length-1)+"?new String('disabled'):null}";
 	}
