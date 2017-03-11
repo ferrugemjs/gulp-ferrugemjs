@@ -465,13 +465,13 @@ function tagBasicToStr(comp){
 
 	if((['option','input','select','button','textarea','fieldset','optgroup','keygen'].indexOf(comp.name) > -1) && separateAttrsElement.dinamic["disabled"]){
 		var disabledCondition = separateAttrsElement.dinamic["disabled"];
-		separateAttrsElement.dinamic["disabled"] = disabledCondition.substring(0,disabledCondition.length-1)+"?'disabled':null}";
+		separateAttrsElement.dinamic["disabled"] = disabledCondition.substring(0,disabledCondition.length-1)+"?new String('disabled'):null}";
 	}
 
 
 	if(negateAttribute){
 		var negateCondition = separateAttrsElement.dinamic[negateAttribute];
-		separateAttrsElement.dinamic[negateAttribute] = negateCondition.substring(0,negateCondition.length-1)+"?'"+negateAttribute+"':null}";
+		separateAttrsElement.dinamic[negateAttribute] = negateCondition.substring(0,negateCondition.length-1)+"?new String('"+negateAttribute+"'):null}";
 	}
 
 	var mod_tmp_static_attr_str=objStaticAttrToStr(separateAttrsElement.static);
