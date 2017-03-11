@@ -145,6 +145,11 @@ var rawHtml
 		</compose>
 		<input type="text" change.bind="this.title"/>
 		<input type="checkbox" value="y" checked="\${this.isNull=='y'}" change.bind="this.isNull"/>
+		<select change.bind="this.region">
+			<option selected="\${1 < 10}">a</option>
+			<option>b</option>
+			<option>c</option>
+		</select>
 	</div>
 </template>`;
 

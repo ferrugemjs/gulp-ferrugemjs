@@ -423,13 +423,8 @@ function tagComposeToStr(comp){
 	var mod_tmp_static_attr_str = JSON.stringify(separateAttrsElement.static);
 	var mod_tmp_static_attr_str_array_flat = objStaticAttrToStr(separateAttrsElement.static);
 	
-	//var mod_tmp_static_attr_str=objStaticAttrToStr(separateAttrsElement.static);
-	
 	var mod_tmp_attr_str = objDinamicAttrToStr(separateAttrsElement.dinamic);
-	//var mod_tmp_attr_str = attrToContext(separate_attrs.dinamic);
 	
-	
-
 	var basicTag = '\t_idom.elementOpen("div",'+static_key+','+mod_tmp_static_attr_str_array_flat+','+mod_tmp_attr_str+');';
 	basicTag += '\t_idom.elementClose("div");'
 	
@@ -457,39 +452,32 @@ function tagBasicToStr(comp){
 	var separateAttrsElement = separateAttribs(comp.attribs)
 
 	var type = (separateAttrsElement.static?separateAttrsElement.static["type"]:"");
-	var checkedCondition = '';
+	
+	//var  = '';
+
+	var negateAttribute = '';
 
 	if(comp.name == 'input' && (type == 'checkbox'||type == 'radio') && separateAttrsElement.dinamic["checked"]){
-		checkedCondition = encodeValue('"'+separateAttrsElement.dinamic["checked"]+'"');
-		delete separateAttrsElement.dinamic["checked"];
+		negateAttribute = "checked";
+	}else if(comp.name == 'option' && separateAttrsElement.dinamic["selected"]){
+		negateAttribute = "selected";
+	}
+
+	if((['option','input','select','button','textarea','fieldset','optgroup','keygen'].indexOf(comp.name) > -1) && separateAttrsElement.dinamic["disabled"]){
+		var disabledCondition = separateAttrsElement.dinamic["disabled"];
+		separateAttrsElement.dinamic["disabled"] = disabledCondition.substring(0,disabledCondition.length-1)+"?'disabled':null}";
+	}
+
+
+	if(negateAttribute){
+		var negateCondition = separateAttrsElement.dinamic[negateAttribute];
+		separateAttrsElement.dinamic[negateAttribute] = negateCondition.substring(0,negateCondition.length-1)+"?'"+negateAttribute+"':null}";
 	}
 
 	var mod_tmp_static_attr_str=objStaticAttrToStr(separateAttrsElement.static);
-	
-
-
 
 	var mod_tmp_attr_str = objDinamicAttrToStr(separateAttrsElement.dinamic,comp.name,type);
-	//console.log(separateAttrsElement.dinamic,mod_tmp_attr_str);
 	var basicTag = '';
-	if(checkedCondition){
-		//console.log('has 3 conditions!!!!',comp.name,type,separateAttrsElement.dinamic["checked"]);
-		//separateAttrsElement.dinamic["checked"] = "checked";
-		var mod_tmp_attr_str2 = '"checked","checked"';
-		if(mod_tmp_attr_str!='""'){
-			mod_tmp_attr_str2 = mod_tmp_attr_str+',"checked","checked"';
-		}
-		
-		basicTag += '\tif'+checkedCondition+'{';
-		basicTag += '\t_idom.elementOpen("'+comp.name+'",'+static_key+','+mod_tmp_static_attr_str+','+mod_tmp_attr_str2+');';
-		basicTag += '\t_idom.elementClose("'+comp.name+'");';
-		basicTag += '\t}else{';
-		basicTag += '\t_idom.elementOpen("'+comp.name+'",'+static_key+','+mod_tmp_static_attr_str+','+mod_tmp_attr_str+');';
-		basicTag += '\t_idom.elementClose("'+comp.name+'");';
-		basicTag += '\t};';
-
-		return basicTag;
-	}
 
 	basicTag = '\t_idom.elementOpen("'+comp.name+'",'+static_key+','+mod_tmp_static_attr_str+','+mod_tmp_attr_str+');';
 	if(comp.children){
