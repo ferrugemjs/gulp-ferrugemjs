@@ -150,6 +150,9 @@ var rawHtml
 			<option>b</option>
 			<option>c</option>
 		</select>
+		<div skip="this.region > 2323" id="mortadela">
+			<span>humm???</span>
+		</div>
 	</div>
 </template>`;
 

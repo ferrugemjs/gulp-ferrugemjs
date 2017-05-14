@@ -197,6 +197,15 @@ var mod_tmp_attr_str = mod_tmp_attr_str_.replace(/\"\$\{([^}]*)\}\"/g,function($
 
 }
 
+function tagSkipToStr(comp){
+	var txtIf = '\tif('+contextToAlias(comp.attribs.condition)+'){';
+	txtIf += '\t_idom.skip()';
+	txtIf += '\t}else{';
+	comp.children.forEach(sub_comp => txtIf += '\t'+componentToStr(sub_comp));
+	txtIf += '\t};';
+	return txtIf;
+}
+
 function tagIfToStr(comp){
 	var txtIf = '\tif('+contextToAlias(comp.attribs.condition)+'){';
 	comp.children.forEach(sub_comp => txtIf += '\t'+componentToStr(sub_comp));
@@ -702,6 +711,20 @@ function resolveTagRequire(comp){
 		
 }
 
+function skipConditionExtractor(comp){	
+	var skipcomp = {
+		type:"tag"
+		,name:"skip"
+		,attribs:{condition:comp.attribs["skip"]}
+	};
+	delete comp.attribs["skip"];
+	//skipcomp.children=[comp];	
+	skipcomp.children=comp.children;
+	delete comp.attribs["children"];
+	comp.children=[skipcomp];
+	return componentToStr(comp);
+}
+
 function ifConditionExtractor(comp){	
 	var ifcomp = {
 		type:"tag"
@@ -736,6 +759,10 @@ function componentToStr(comp){
 	if(comp.type=='text'){
 		return tagTextToStr(comp);
 	}
+	//tratando os skips embutidos
+	if(comp.attribs && comp.attribs["skip"]){
+		return skipConditionExtractor(comp);
+	}
 	//tratando os ifs embutidos
 	if(comp.attribs && comp.attribs["if"]){
 		return ifConditionExtractor(comp);
@@ -752,7 +779,9 @@ function componentToStr(comp){
 	if(comp.name=='if'){
 		return tagIfToStr(comp);
 	}
-
+	if(comp.name=='skip'){
+		return tagSkipToStr(comp);
+	}
 	if(comp.name=='else'){
 		return tagElseToStr(comp);
 	}
