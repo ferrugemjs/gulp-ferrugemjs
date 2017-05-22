@@ -283,7 +283,8 @@ function tagCommandToStr(comp){
 	if(comp.children && comp.children.length){
 		var text = comp.children[0].data;
 		if(text && text.trim()){
-			return text.replace(/@this\./gm,context_alias+'.');
+			//return text.replace(/@this\./gm,context_alias+'.');
+			return '(function(){'+text+'}.bind('+context_alias+'))()';
 		};
 	}
 	return '';
