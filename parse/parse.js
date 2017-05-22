@@ -143,14 +143,15 @@ function objDinamicAttrToStr(attribs,tagName,type){
 			var evtstr = "on"+key.substring(0,indxBind);
 			obj_array.push(evtstr);
 			//console.log(attribs.type);
+			var attr_pure = attribs[key].replace(context_alias+".","");
 			if(tagName=="select"){									
-				obj_array.push('#{#function($evt){\nvar tmp_$target$_evt=$evt.target;\n'+(attribs[key])+'=tmp_$target$_evt.options[tmp_$target$_evt.selectedIndex].value;\n'+context_alias+'.refresh();\n}#}#');
+				obj_array.push('#{#function($evt){\nvar tmp_$target$_evt=$evt.target;\n'+context_alias+'.refresh({"'+( attr_pure )+'":tmp_$target$_evt.options[tmp_$target$_evt.selectedIndex].value});\n}#}#');
 			}else if(type=="checkbox"||type=="radio"){		
 				//console.log( attribs[key]);							
-				obj_array.push('#{#function($evt){\n'+( attribs[key])+'=$evt.target.checked?$evt.target.value:null;\n'+context_alias+'.refresh()\n}\n#}#');
+				obj_array.push('#{#function($evt){\n'+context_alias+'.refresh({"'+( attr_pure )+'":$evt.target.checked?$evt.target.value:null})\n}\n#}#');
 			}else{		
 				//console.log( attribs[key]);							
-				obj_array.push('#{#function($evt){\n'+( attribs[key])+'=$evt.target.value;\n'+context_alias+'.refresh()\n}\n#}#');
+				obj_array.push('#{#function($evt){\n'+context_alias+'.refresh({"'+( attr_pure )+'":$evt.target.value})\n}\n#}#');
 			}
 			//console.log(attribs[key])								
 		}else if(key.indexOf(".") > 0){
