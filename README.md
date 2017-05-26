@@ -18,7 +18,7 @@ gulp-ferrugemjs is a simple [gulp](https://github.com/wearefractal/gulp) plugin 
 ```js
 var gulp_ferrugemjs = require('gulp-ferrugemjs');//import the plugin
 // your code here!!
-pipe(gulp_ferrugemjs({formatCode:true}))
+pipe(gulp_ferrugemjs())
 //..pass to next pipe ;)
 ```
 

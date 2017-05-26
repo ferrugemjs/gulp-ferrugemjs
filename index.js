@@ -1,7 +1,7 @@
 var through = require('through-gulp');
 var StringDecoder = require('string_decoder').StringDecoder;
 var decoder = new StringDecoder('utf8');
-var fjsparse = require("./parse/parse");
+var ferrugemjs_node = require("ferrugemjs-node");
 
 module.exports = function(opt) {
 	// to preserve existing |undefined| behaviour and to introduce |newLine: ""| for binaries
@@ -20,7 +20,7 @@ module.exports = function(opt) {
 			//var rawHtml = new Buffer(decoder.write(file.contents));
 			
 			file.contents = new Buffer(
-				fjsparse(decoder.write(templateFile),{viewModel:viewModel,formatCode:(opt?opt.formatCode:false)})
+				ferrugemjs_node(decoder.write(templateFile),{viewModel:viewModel})
 			);
 		}
 		if (file.isStream()){}
