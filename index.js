@@ -5,6 +5,7 @@ var ferrugemjs_node = require("ferrugemjs-node");
 
 module.exports = function(opt) {
 	// to preserve existing |undefined| behaviour and to introduce |newLine: ""| for binaries
+	var opt = opt||{};
 	if (typeof opt.newLine !== 'string') {
 		opt.newLine = '\n';
 	}
