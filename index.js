@@ -21,7 +21,7 @@ module.exports = function(opt) {
 			//var rawHtml = new Buffer(decoder.write(file.contents));
 			
 			file.contents = new Buffer(
-				ferrugemjs_node(decoder.write(templateFile),{viewModel:viewModel})
+				ferrugemjs_node(decoder.write(templateFile),{viewModel:viewModel, templateExtension: opt.templateExtension || ".html"})
 			);
 		}
 		if (file.isStream()){}
