@@ -1,6 +1,6 @@
 {
   "name": "gulp-ferrugemjs",
-  "version": "0.17.0",
+  "version": "0.16.3",
   "description": "plugin GULP to convert html template to Incremental DOM",
   "main": "index.js",
   "scripts": {
