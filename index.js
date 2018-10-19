@@ -5,10 +5,10 @@ var decoder = new StringDecoder('utf8');
 var ferrugemjs_node = require("ferrugemjs-node");
 
 const compile2HTML = (file, opt) => {
-	var opt = Object.assign({}, opt || {},{
+	var opt = Object.assign({}, {
 		templateExtension: '.html',
 		env:'development'
-	});
+	}, opt || {});
 	var filePath = file.path;
 	var relativeFilePath = path.relative(__dirname, file.path).replace('../../','');
 	var fileName = filePath;
@@ -17,7 +17,6 @@ const compile2HTML = (file, opt) => {
 	fileName = fileName.substring(0,fileName.length - opt.templateExtension.length);
 	var viewModel = fileName;
 
-	console.log('filename:',fileName,relativeFilePath);
 	var templateFile = Buffer.from(decoder.write(file.contents));
 	file.contents = Buffer.from(
 		ferrugemjs_node(decoder.write(templateFile),{
